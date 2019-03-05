@@ -23,8 +23,8 @@ func Provider() *schema.Provider {
 		ConfigureFunc: providerConfigure,
 
 		ResourcesMap: map[string]*schema.Resource{
-			"transip_dns_entry": resourceDNSEntry(),
-			"transip_domain":    resourceDomain(),
+			"transip_dns_record": resourceDNSRecord(),
+			"transip_domain":     resourceDomain(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -37,6 +37,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	client, err := gotransip.NewSOAPClient(gotransip.ClientConfig{
 		AccountName:    d.Get("account_name").(string),
 		PrivateKeyBody: []byte(d.Get("private_key").(string)),
+		// Mode:           gotransip.APIModeReadOnly,
 	})
 	if err != nil {
 		return nil, err
