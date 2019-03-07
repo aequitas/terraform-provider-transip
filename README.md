@@ -17,6 +17,11 @@ In order to use the provider you need a Transip account. For this account the AP
 
 Download the latest binary release from the [Releases](https://github.com/aequitas/terraform-provider-transip/releases) page, unzip it to a location in `PATH` (eg: `/usr/local/bin/`).
 
+## Notes
+
+- The Transip API managed DNS Entries as a list property of a Domain object. In this implementation I have opted to give DNS entries their own resource `transip_dns_record` to make management more in line with other Terraform DNS Providers.
+- Updating of DNS Entries might not be atomic and is not tested for race conditions. Applying many DNS record resources simultaneously might lead to partial applies. Please open an issue if you encounter this behaviour.
+
 ## Example
 
 ```hcl
@@ -26,6 +31,11 @@ provider "transip" {
   account_name = "example"
   private_key  = "${var.private_key}"
 }
+
+#
+# resource "transip_domain" "example_com" {
+#     name = "example.com"
+# }
 
 data "transip_domain" "example_com" {
   name = "example.com"
