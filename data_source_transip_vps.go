@@ -64,33 +64,6 @@ func dataSourceVps() *schema.Resource {
 				Computed: true,
 				Type:     schema.TypeString,
 			},
-
-			// "nameservers": {
-			// 	Computed: true,
-			// 	Type:     schema.TypeList,
-			// 	Elem: &schema.Schema{
-			// 		Type: schema.TypeMap,
-			// 	},
-			// },
-			// "is_locked": {
-			// 	Computed: true,
-			// 	Type:     schema.TypeBool,
-			// },
-			// "whoiscontact": {
-			// 	Computed: true,
-			// 	Type:     schema.TypeList,
-			// 	Elem: &schema.Schema{
-			// 		Type: schema.TypeMap,
-			// 	},
-			// },
-			// "registration_data": {
-			// 	Computed: true,
-			// 	Type:     schema.TypeString,
-			// },
-			// "renewal_date": {
-			// 	Computed: true,
-			// 	Type:     schema.TypeString,
-			// },
 		},
 	}
 }
