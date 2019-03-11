@@ -4,5 +4,3 @@ go:
   - "1.10"
 before_script:
   - go get github.com/golang/lint/golint
-script:
-  - go build .
