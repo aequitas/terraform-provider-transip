@@ -8,6 +8,7 @@ Supported resources:
 
     - Domain name (data source, resource)
     - Domain name DNS records (resource)
+    - VPS (data source)
 
 ## Requirements
 
@@ -25,22 +26,26 @@ Download the latest binary release from the [Releases](https://github.com/aequit
 ## Example
 
 ```hcl
+# Enable Transip API, whitelist your IP, create private key and provide it here
 variable "private_key" {}
 
+# Configure the provider
 provider "transip" {
   account_name = "example"
   private_key  = "${var.private_key}"
 }
 
-#
-# resource "transip_domain" "example_com" {
-#     name = "example.com"
-# }
-
+# Get an existing domain as data source
 data "transip_domain" "example_com" {
   name = "example.com"
 }
 
+# Or create/import a (new) domain name to be managed by Terraform
+# resource "transip_domain" "example_com" {
+#     name = "example.com"
+# }
+
+# Simple CNAME record
 resource "transip_dns_record" "www" {
   domain  = "${transip_domain.example_com.id}"
   name    = "www"
@@ -48,6 +53,7 @@ resource "transip_dns_record" "www" {
   content = ["@"]
 }
 
+# A record with multiple entries, eg: for round robin DNS
 resource "transip_dns_record" "test" {
   domain = "${transip_domain.example_com.id}"
   name   = "test"
@@ -59,6 +65,7 @@ resource "transip_dns_record" "test" {
   ]
 }
 
+# IPv6 record
 resource "transip_dns_record" "test" {
   domain = "${transip_domain.example_com.id}"
   name   = "test"
@@ -69,9 +76,30 @@ resource "transip_dns_record" "test" {
     "2001:db8::1",
   ]
 }
+
+# Get an existing VPS as datasource
+data "transip_vps" "test" {
+  name = "test-vps"
+}
+
+# Set hostname for VPS using data source
+resource "transip_dns_record" "vps" {
+  domain = "${transip_domain.example_com.id}"
+  name   = "vps"
+  type   = "A"
+
+  content = ["${data.transip_vps.test.ipv4_address}"]
+}
+resource "transip_dns_record" "vps" {
+  domain = "${transip_domain.example_com.id}"
+  name   = "vps"
+  type   = "AAAA"
+
+  content = ["${data.transip_vps.test.ipv6_address}"]
+}
 ```
 
 ## Roadmap
 
 - Tests
-- VPS (data source, resource)
+- VPS (resource)
