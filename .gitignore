@@ -3,3 +3,5 @@
 *.tfvars
 
 terraform-provider-*
+
+build/
