@@ -1,9 +1,27 @@
-workflow "New workflow" {
+workflow "Release" {
   on = "push"
-  resolves = ["Make"]
+
+  resolves = [
+    "Build",
+  ]
 }
 
-action "Make" {
-  uses = "Make"
-  runs = "make"
+action "Build" {
+  uses = "docker://golang:1.11"
+  runs = ["sh", "-c", "go get -d && go build"]
 }
+
+# action "Upload release Darwin" {
+#   uses = "JasonEtco/upload-to-release@master"
+#   args = "terraform-provider-transip_*_darwin_amd64.tgz"
+#   secrets = ["GITHUB_TOKEN"]
+#   needs = ["Build releases"]
+# }
+
+
+# action "Upload release Linux" {
+#   uses = "JasonEtco/upload-to-release@master"
+#   args = "terraform-provider-transip_*_linux_amd64.tgz"
+#   secrets = ["GITHUB_TOKEN"]
+#   needs = ["Build releases"]
+# }
