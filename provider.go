@@ -12,11 +12,19 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name of the Transip account.",
+				DefaultFunc: schema.EnvDefaultFunc("TRANSIP_ACCOUNT_NAME", nil),
 			},
 			"private_key": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Contents of the private key file to be used to authenticate.",
+				DefaultFunc: schema.EnvDefaultFunc("TRANSIP_PRIVATE_KEY", nil),
+			},
+			"read_only": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Disable API write calls.",
+				Default:     false,
 			},
 		},
 
@@ -35,10 +43,15 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+	apiMode := gotransip.APIModeReadWrite
+	if d.Get("read_only").(bool) {
+		apiMode = gotransip.APIModeReadOnly
+	}
+
 	client, err := gotransip.NewSOAPClient(gotransip.ClientConfig{
 		AccountName:    d.Get("account_name").(string),
 		PrivateKeyBody: []byte(d.Get("private_key").(string)),
-		// Mode:           gotransip.APIModeReadOnly,
+		Mode:           apiMode,
 	})
 	if err != nil {
 		return nil, err
