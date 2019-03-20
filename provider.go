@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/transip/gotransip"
 )
@@ -48,9 +50,14 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		apiMode = gotransip.APIModeReadOnly
 	}
 
+	private_key_body := d.Get("private_key").(string)
+	if private_key_body == "" {
+		return nil, fmt.Errorf("private_key not provided")
+	}
+
 	client, err := gotransip.NewSOAPClient(gotransip.ClientConfig{
 		AccountName:    d.Get("account_name").(string),
-		PrivateKeyBody: []byte(d.Get("private_key").(string)),
+		PrivateKeyBody: []byte(private_key_body),
 		Mode:           apiMode,
 	})
 	if err != nil {
