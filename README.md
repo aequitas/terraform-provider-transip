@@ -36,6 +36,9 @@ provider "transip" {
   private_key  = "${var.private_key}"
 }
 
+# Or simply empty when using the environment variables TRANSIP_ACCOUNT_NAME and TRANSIP_PRIVATE_KEY
+# provider "transip" { }
+
 # Get an existing domain as data source
 data "transip_domain" "example_com" {
   name = "example.com"
