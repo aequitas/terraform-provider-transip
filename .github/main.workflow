@@ -3,12 +3,18 @@ workflow "Release" {
 
   resolves = [
     "Build",
+    "Test",
   ]
 }
 
 action "Build" {
   uses = "docker://golang:1.11"
   runs = ["sh", "-c", "go get -d && go build"]
+}
+
+action "Test" {
+  uses = "docker://golang:1.11"
+  runs = ["sh", "-c", "go get -d && go test"]
 }
 
 # action "Upload release Darwin" {
