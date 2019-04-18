@@ -1,6 +1,8 @@
 # Terraform Transip provider
 
 [![Build Status](https://travis-ci.org/aequitas/terraform-provider-transip.svg?branch=master)](https://travis-ci.org/aequitas/terraform-provider-transip)
+[![Actions Status](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/badge/aequitas/terraform-provider-transip)](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/results/aequitas/terraform-provider-transip)
+
 
 Provides resources for Transip resources using [Transip API](https://www.transip.nl/transip/api/)
 
