@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/transip/gotransip"
@@ -138,34 +139,52 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 	entryType := domain.DNSEntryType(d.Get("type").(string))
 	content := d.Get("content").([]interface{})
 
-	dom, err := domain.GetInfo(client, domainName)
-	if err != nil {
-		return fmt.Errorf("failed to get domain %s for writing DNS record entries: %s", domainName, err)
-	}
-
-	var newEntries []domain.DNSEntry
-	for _, e := range dom.DNSEntries {
-		if e.Name == entryName && e.Type == entryType {
-			continue
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		dom, err := domain.GetInfo(client, domainName)
+		if err != nil {
+			return resource.NonRetryableError(
+				fmt.Errorf("failed to get domain %s for writing DNS record entries: %s", domainName, err))
 		}
-		newEntries = append(newEntries, e)
-	}
 
-	for _, c := range content {
-		newEntries = append(newEntries, domain.DNSEntry{
-			Name:    entryName,
-			TTL:     expire,
-			Type:    entryType,
-			Content: c.(string),
-		})
-	}
+		var newEntries []domain.DNSEntry
+		for _, e := range dom.DNSEntries {
+			if e.Name == entryName && e.Type == entryType {
+				continue
+			}
+			newEntries = append(newEntries, e)
+		}
 
-	err = domain.SetDNSEntries(client, domainName, newEntries)
-	if err != nil {
-		return fmt.Errorf("failed to update DNS entries for domain %s: %s", domainName, err)
-	}
+		for _, c := range content {
+			newEntries = append(newEntries, domain.DNSEntry{
+				Name:    entryName,
+				TTL:     expire,
+				Type:    entryType,
+				Content: c.(string),
+			})
+		}
 
-	return resourceDNSRecordRead(d, m)
+		err = domain.SetDNSEntries(client, domainName, newEntries)
+
+		// this happens on concurrent requests where another API request is accessing the same object
+		if err != nil && strings.Contains(err.Error(), "OBJECT_IS_LOCKED") {
+			return resource.RetryableError(fmt.Errorf("Domain is locked: %s", err))
+		}
+
+		// This happens on concurrent requests where another API request is accessing the same object or
+		// a race condition where the previously read object was modified and saved.
+		// SOAP Fault 100: Je probeert een oude versie van dit object op te slaan. Er is al een nieuwere versie beschikbaar.
+		// SOAP Fault 100: Er is een interne fout opgetreden, neem a.u.b. contact op met support. (OBJECT_IS_LOCKED)
+		if err != nil && strings.Contains(err.Error(), "SOAP Fault 100") {
+			return resource.RetryableError(fmt.Errorf("Domain object is locked or changed during API call: %s", err))
+		}
+
+		if err != nil {
+			return resource.NonRetryableError(
+				fmt.Errorf("failed to update DNS entries for domain %s: %s", domainName, err))
+		}
+
+		return resource.NonRetryableError(resourceDNSRecordRead(d, m))
+	})
 }
 
 func resourceDNSRecordDelete(d *schema.ResourceData, m interface{}) error {

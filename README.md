@@ -47,7 +47,7 @@ data "transip_domain" "example_com" {
 
 # Simple CNAME record
 resource "transip_dns_record" "www" {
-  domain  = "${transip_domain.example_com.id}"
+  domain  = "${data.transip_domain.example_com.id}"
   name    = "www"
   type    = "CNAME"
   content = ["@"]
@@ -55,7 +55,7 @@ resource "transip_dns_record" "www" {
 
 # A record with multiple entries, eg: for round robin DNS
 resource "transip_dns_record" "test" {
-  domain = "${transip_domain.example_com.id}"
+  domain = "${data.transip_domain.example_com.id}"
   name   = "test"
   type   = "A"
 
@@ -66,8 +66,8 @@ resource "transip_dns_record" "test" {
 }
 
 # IPv6 record
-resource "transip_dns_record" "test" {
-  domain = "${transip_domain.example_com.id}"
+resource "transip_dns_record" "testv6" {
+  domain = "${data.transip_domain.example_com.id}"
   name   = "test"
   expire = 300
   type   = "AAAA"
@@ -84,14 +84,14 @@ data "transip_vps" "test" {
 
 # Set hostname for VPS using data source
 resource "transip_dns_record" "vps" {
-  domain = "${transip_domain.example_com.id}"
+  domain = "${data.transip_domain.example_com.id}"
   name   = "vps"
   type   = "A"
 
   content = ["${data.transip_vps.test.ipv4_address}"]
 }
 resource "transip_dns_record" "vps" {
-  domain = "${transip_domain.example_com.id}"
+  domain = "${data.transip_domain.example_com.id}"
   name   = "vps"
   type   = "AAAA"
 

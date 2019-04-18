@@ -9,6 +9,8 @@ import (
 )
 
 func TestAccTransipDataSourceDomain(t *testing.T) {
+	var testConfig = `data "transip_domain" "test" {name = "%s"}`
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -24,9 +26,3 @@ func TestAccTransipDataSourceDomain(t *testing.T) {
 		},
 	})
 }
-
-var testConfig = `
-data "transip_domain" "test" {
-	name = "%s"
-}
-`

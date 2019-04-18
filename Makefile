@@ -1,4 +1,4 @@
-version = $(shell git describe --tags)
+version = $(shell git describe --tags --abbrev=0)
 
 releases = \
 	terraform-provider-transip_${version}_darwin_amd64.tgz \
@@ -16,7 +16,13 @@ deps: ${GOPATH}/src/github.com/transip/gotransip ${GOPATH}/src/github.com/hashic
 ${GOPATH}/src/github.com/transip/gotransip ${GOPATH}/src/github.com/hashicorp/terraform:
 	go get -d
 
+test_integration: test
+test_integration: TF_ACC=1
+
+test: | deps
+	TF_ACC=${TF_ACC} go test -v
+
 clean:
-	rm -rf terraform-provider-transip*.tgz build/
+	rm -rf terraform-provider-transip* build/
 
 .PHONY: release
