@@ -37,6 +37,15 @@ provider "transip" {
 }
 
 # Or simply empty when using the environment variables TRANSIP_ACCOUNT_NAME and TRANSIP_PRIVATE_KEY
+# To make sure Terraform can read the environment variable, it needs the prefix TF_VAR_ which in this case results to
+# TF_VAR_TRANSIP_PRIVATE_KEY
+# Preferably, this private key is encoded in base64 to preserve the format (i.e. when using it with GitLab-CI/CD). 
+# This can then be read by Terraform like so:
+
+provider "transip" {
+  private_key = "${base64decode(var.private_key)}"
+}
+
 # provider "transip" { }
 
 # Get an existing domain as data source
