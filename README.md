@@ -57,6 +57,20 @@ resource "transip_dns_record" "www" {
   content = ["@"]
 }
 
+# VPS Server with DNS record
+resource "transip_vps" "test" {
+  name = "test"
+  product_name = "vps-bladevps-x1"
+  operating_system = "ubuntu-18.04"
+}
+resource "transip_dns_record" "vps" {
+  domain = "${data.transip_domain.example_com.id}"
+  name   = "vps"
+  type   = "A"
+
+  content = [ "${transip_vps.test.ipv4_address}" ]
+}
+
 # A record with multiple entries, eg: for round robin DNS
 resource "transip_dns_record" "test" {
   domain = "${data.transip_domain.example_com.id}"
