@@ -107,7 +107,7 @@ func resourceDNSRecordRead(d *schema.ResourceData, m interface{}) error {
 
 	dom, err := domain.GetInfo(client, domainName)
 	if err != nil {
-		return fmt.Errorf("failed to get domain %s for reading DNS record entries: %s", domainName, err)
+		return fmt.Errorf("failed to get domain %s for reading current DNS record entries: %s", domainName, err)
 	}
 
 	var content []string

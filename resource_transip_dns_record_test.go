@@ -41,19 +41,21 @@ func TestAccTransipResourceDomain(t *testing.T) {
 func TestAccTransipResourceDomainConcurrent(t *testing.T) {
 	timestamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
+	terraform { required_version = ">= 0.12.0" }
+
 	data "transip_domain" "test" {
 		name = "%s"
 	}
 
 	resource "transip_dns_record" "test1" {
-		domain  = "${data.transip_domain.test.id}"
+		domain  = data.transip_domain.test.id
 		name    = "_terraform_provider_transip1_%d"
 		type    = "CNAME"
 		content = ["@"]
 	}
 
 	resource "transip_dns_record" "test2" {
-		domain  = "${data.transip_domain.test.id}"
+		domain  = data.transip_domain.test.id
 		name    = "_terraform_provider_transip2_%d"
 		type    = "CNAME"
 		content = ["@"]
