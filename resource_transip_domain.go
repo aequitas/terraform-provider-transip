@@ -34,7 +34,7 @@ func resourceDomainCreate(d *schema.ResourceData, m interface{}) error {
 
 	dom := domain.Domain{Name: name}
 
-	err := domain.Register(client, dom)
+	_, err := domain.Register(client, dom)
 	if err != nil {
 		return fmt.Errorf("failed to register domain %q: %s", name, err)
 	}
