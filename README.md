@@ -4,7 +4,7 @@
 [![Actions Status](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/badge/aequitas/terraform-provider-transip)](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/results/aequitas/terraform-provider-transip)
 
 
-Provides resources for Transip resources using [Transip API](https://www.transip.nl/transip/api/)
+Provides resources for Transip resources using [Transip API](https://www.transip.eu/transip/api/)
 
 Supported resources:
 
@@ -14,7 +14,7 @@ Supported resources:
 
 ## Requirements
 
-In order to use the provider you need a Transip account. For this account the API should be enabled and a private key should be created which is used for authentication (https://www.transip.nl/cp/account/api/).
+In order to use the provider you need a Transip account. For this account the API should be enabled and a private key should be created which is used for authentication (https://www.transip.eu/cp/account/api/).
 
 ## Installation
 
