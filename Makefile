@@ -10,7 +10,7 @@ terraform-provider-transip_${version}_%_amd64.tgz: build/%_amd64/terraform-provi
 	tar -zcf $@ -C ${<D} ${<F}
 
 build/%_amd64/terraform-provider-transip_v${version}: $(wildcard *.go) | deps
-	mkdir -p ${@D}; go build -o $@
+	mkdir -p ${@D}; GOOS=$* go build -o $@
 
 deps: ${GOPATH}/src/github.com/transip/gotransip ${GOPATH}/src/github.com/hashicorp/terraform
 ${GOPATH}/src/github.com/transip/gotransip ${GOPATH}/src/github.com/hashicorp/terraform:
