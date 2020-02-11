@@ -46,9 +46,11 @@ func resourceDNSRecord() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					string(domain.DNSEntryTypeA),
 					string(domain.DNSEntryTypeAAAA),
+					string(domain.DNSEntryTypeCAA),
 					string(domain.DNSEntryTypeCNAME),
 					string(domain.DNSEntryTypeMX),
 					string(domain.DNSEntryTypeNS),
+					string(domain.DNSEntryTypeTLSA),
 					string(domain.DNSEntryTypeTXT),
 					string(domain.DNSEntryTypeSRV),
 				}, false),
