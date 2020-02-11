@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/transip/gotransip"
-	"github.com/transip/gotransip/vps"
+	"github.com/transip/gotransip/v5"
+	"github.com/transip/gotransip/v5/vps"
 )
 
 func dataSourceVps() *schema.Resource {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/transip/gotransip"
+	"github.com/transip/gotransip/v5"
 )
 
 func Provider() *schema.Provider {

@@ -6,8 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/transip/gotransip"
-	"github.com/transip/gotransip/domain"
+	"github.com/transip/gotransip/v5"
+	"github.com/transip/gotransip/v5/domain"
 )
 
 func resourceDomain() *schema.Resource {

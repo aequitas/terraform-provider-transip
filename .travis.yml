@@ -1,6 +1,4 @@
 sudo: false
 language: go
 go:
-  - "1.10"
-before_script:
-  - go get github.com/golang/lint/golint
+  - "1.13"
