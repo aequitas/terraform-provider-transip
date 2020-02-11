@@ -53,6 +53,7 @@ func resourceDNSRecord() *schema.Resource {
 					string(domain.DNSEntryTypeTLSA),
 					string(domain.DNSEntryTypeTXT),
 					string(domain.DNSEntryTypeSRV),
+					string(domain.DNSEntryTypeSSHFP),
 				}, false),
 			},
 			"content": &schema.Schema{
