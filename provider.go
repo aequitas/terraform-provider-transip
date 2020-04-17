@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/transip/gotransip/v6"
+	"github.com/transip/gotransip/v6/authenticator"
 	"strings"
 )
 
@@ -64,10 +65,17 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	private_key := strings.NewReader(private_key_body)
 
+	// TODO: provide better destination for cache, preferrably terraform native or os native
+	cache, err := authenticator.NewFileTokenCache("/tmp/gotransip_token_cache")
+	if err != nil {
+		panic(err.Error())
+	}
+
 	client, err := gotransip.NewClient(gotransip.ClientConfiguration{
 		AccountName:      d.Get("account_name").(string),
 		PrivateKeyReader: private_key,
 		Mode:             apiMode,
+		TokenCache:       cache,
 	})
 	if err != nil {
 		return nil, err
