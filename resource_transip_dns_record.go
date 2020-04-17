@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	// "log"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
-	"github.com/transip/gotransip/v5"
-	"github.com/transip/gotransip/v5/domain"
+	"github.com/transip/gotransip/v6/domain"
+	"github.com/transip/gotransip/v6/repository"
 )
 
 func resourceDNSRecord() *schema.Resource {
@@ -44,16 +45,7 @@ func resourceDNSRecord() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					string(domain.DNSEntryTypeA),
-					string(domain.DNSEntryTypeAAAA),
-					string(domain.DNSEntryTypeCAA),
-					string(domain.DNSEntryTypeCNAME),
-					string(domain.DNSEntryTypeMX),
-					string(domain.DNSEntryTypeNS),
-					string(domain.DNSEntryTypeTLSA),
-					string(domain.DNSEntryTypeTXT),
-					string(domain.DNSEntryTypeSRV),
-					string(domain.DNSEntryTypeSSHFP),
+					"A", "AAAA", "CNAME", "MX", "NS", "TXT", "SRV", "SSHFP", "TLSA",
 				}, false),
 			},
 			"content": &schema.Schema{
@@ -70,14 +62,22 @@ func resourceDNSRecord() *schema.Resource {
 func resourceDNSRecordCreate(d *schema.ResourceData, m interface{}) error {
 	domainName := d.Get("domain").(string)
 	entryName := d.Get("name").(string)
-	entryType := domain.DNSEntryType(d.Get("type").(string))
+	entryType := d.Get("type").(string)
 
-	client := m.(gotransip.Client)
-	dom, err := domain.GetInfo(client, domainName)
+	client := m.(repository.Client)
+	repository := domain.Repository{Client: client}
+
+	// dom, err := domain.GetInfo(client, domainName)
+	// if err != nil {
+	//   return fmt.Errorf("failed to get domain %s for reading DNS record entries: %s", domainName, err)
+	// }
+
+	dnsEntries, err := repository.GetDNSEntries(domainName)
 	if err != nil {
-		return fmt.Errorf("failed to get domain %s for reading DNS record entries: %s", domainName, err)
+		return fmt.Errorf("failed to read DNS record entries for domain %s: %s", domainName, err)
 	}
-	for _, e := range dom.DNSEntries {
+
+	for _, e := range dnsEntries {
 		if e.Name == entryName && e.Type == entryType {
 			return fmt.Errorf("DNS entries for %s record named %s already exist", entryType, entryName)
 		}
@@ -90,9 +90,10 @@ func resourceDNSRecordCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDNSRecordRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(gotransip.Client)
-
 	id := d.Id()
+	// TODO: transip uniquely identifies the dnsentries using name, expire and type
+	// https://github.com/transip/gotransip/blob/9defadb50daea3d11821aed85498078b9aff4986/domain/repository.go#L148
+	// don't think it would hurt omiting the expire to keep compatible with older state files for now
 	if id != "" {
 		idparts := strings.Split(id, "/")
 		if len(idparts) == 3 {
@@ -106,18 +107,21 @@ func resourceDNSRecordRead(d *schema.ResourceData, m interface{}) error {
 
 	domainName := d.Get("domain").(string)
 	entryName := d.Get("name").(string)
-	entryType := domain.DNSEntryType(d.Get("type").(string))
+	entryType := d.Get("type").(string)
 
-	dom, err := domain.GetInfo(client, domainName)
+	client := m.(repository.Client)
+	repository := domain.Repository{Client: client}
+
+	dnsEntries, err := repository.GetDNSEntries(domainName)
 	if err != nil {
-		return fmt.Errorf("failed to get domain %s for reading current DNS record entries: %s", domainName, err)
+		return fmt.Errorf("failed to read DNS record entries for domain %s: %s", domainName, err)
 	}
 
 	var content []string
-	var ttl int64
-	for _, e := range dom.DNSEntries {
+	var expire int
+	for _, e := range dnsEntries {
 		if e.Name == entryName && e.Type == entryType {
-			ttl = e.TTL
+			expire = e.Expire
 			content = append(content, e.Content)
 		}
 	}
@@ -127,67 +131,146 @@ func resourceDNSRecordRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.Set("name", entryName)
-	d.Set("expire", ttl)
+	d.Set("expire", expire)
 	d.Set("type", entryType)
 	d.Set("content", content)
 	return nil
 }
 
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(gotransip.Client)
 	domainName := d.Get("domain").(string)
 
 	entryName := d.Get("name").(string)
-	expire := int64(d.Get("expire").(int))
-	entryType := domain.DNSEntryType(d.Get("type").(string))
+	expire := d.Get("expire").(int)
+	entryType := d.Get("type").(string)
 	content := d.Get("content").([]interface{})
 
+	client := m.(repository.Client)
+	repository := domain.Repository{Client: client}
+
 	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		dom, err := domain.GetInfo(client, domainName)
+		fmt.Printf("[INFO] terraform-provider-transip update %s\n", entryName)
+
+		dnsEntries, err := repository.GetDNSEntries(domainName)
 		if err != nil {
-			return resource.NonRetryableError(
-				fmt.Errorf("failed to get domain %s for writing DNS record entries: %s", domainName, err))
+			if strings.Contains(err.Error(), "Internal error occurred, please contact our support") {
+				return resource.RetryableError(fmt.Errorf("failed to get existing DNS record entries for domain %s: %s", domainName, err))
+			}
+			return resource.NonRetryableError(fmt.Errorf("failed to get existing DNS record entries for domain %s: %s", domainName, err))
 		}
 
-		var newEntries []domain.DNSEntry
-		for _, e := range dom.DNSEntries {
-			if e.Name == entryName && e.Type == entryType {
+		// go through all dns entries in the zone (there is no way to read a single entry name)
+		for _, existingEntry := range dnsEntries {
+			// skip irrelevant entries (ie: the ones not being modified)
+			if existingEntry.Name != entryName || existingEntry.Type != entryType {
 				continue
 			}
-			newEntries = append(newEntries, e)
+			fmt.Printf("[INFO] terraform-provider-transip %s removing %v\n", entryName, existingEntry)
+			// remove all entries for the current entry/expiry/type combination
+			err := repository.RemoveDNSEntry(domainName, existingEntry)
+			if err != nil {
+				if strings.Contains(err.Error(), "Internal error occurred, please contact our support") {
+					return resource.RetryableError(fmt.Errorf("failed to remove DNS record entry for domain %s (%v): %s", domainName, existingEntry, err))
+				}
+				return resource.NonRetryableError(fmt.Errorf("failed to remove DNS record entry for domain %s (%v): %s", domainName, existingEntry, err))
+			}
 		}
 
+		// add all desired entries for the current entry/expiry/type combination
 		for _, c := range content {
-			newEntries = append(newEntries, domain.DNSEntry{
+			dnsEntry := domain.DNSEntry{
 				Name:    entryName,
-				TTL:     expire,
+				Expire:  expire,
 				Type:    entryType,
 				Content: c.(string),
-			})
-		}
-
-		err = domain.SetDNSEntries(client, domainName, newEntries)
-
-		// this happens on concurrent requests where another API request is accessing the same object
-		if err != nil && strings.Contains(err.Error(), "OBJECT_IS_LOCKED") {
-			return resource.RetryableError(fmt.Errorf("Domain is locked: %s", err))
-		}
-
-		// This happens on concurrent requests where another API request is accessing the same object or
-		// a race condition where the previously read object was modified and saved.
-		// SOAP Fault 100: Je probeert een oude versie van dit object op te slaan. Er is al een nieuwere versie beschikbaar.
-		// SOAP Fault 100: Er is een interne fout opgetreden, neem a.u.b. contact op met support. (OBJECT_IS_LOCKED)
-		if err != nil && strings.Contains(err.Error(), "SOAP Fault 100") {
-			return resource.RetryableError(fmt.Errorf("Domain object is locked or changed during API call: %s", err))
-		}
-
-		if err != nil {
-			return resource.NonRetryableError(
-				fmt.Errorf("failed to update DNS entries for domain %s: %s", domainName, err))
+			}
+			fmt.Printf("[INFO] terraform-provider-transip: %s adding %v\n", entryName, dnsEntry)
+			err := repository.AddDNSEntry(domainName, dnsEntry)
+			if err != nil {
+				if strings.Contains(err.Error(), "Internal error occurred, please contact our support") {
+					return resource.RetryableError(fmt.Errorf("failed to add DNS record entry for domain %s (%v): %s", domainName, dnsEntry, err))
+				}
+				return resource.NonRetryableError(fmt.Errorf("failed to add DNS record entry for domain %s (%v): %s", domainName, dnsEntry, err))
+			}
 		}
 
 		return resource.NonRetryableError(resourceDNSRecordRead(d, m))
 	})
+
+	// var newEntries []domain.DNSEntry
+	//   for _, c := range content {
+	//     newEntries = append(newEntries, domain.DNSEntry{
+	//       Name:    entryName,
+	//       Expire:  expire,
+	//       Type:    entryType,
+	//       Content: c.(string),
+	//     })
+	//   }
+	//
+	//
+
+	//   return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	//     dnsEntries, err := repository.GetDNSEntries(domainName)
+	//     if err != nil {
+	//       return resource.NonRetryableError(
+	//         fmt.Errorf("failed to get existing DNS record entries for domain %s: %s", domainName, err))
+	//     }
+	//
+	//     // create list of existing entries without the entry that's being updated
+	//     var newEntries []domain.DNSEntry
+	//     for _, e := range dnsEntries {
+	//       if e.Name == entryName && e.Type == entryType {
+	//         continue
+	//       }
+	//       newEntries = append(newEntries, e)
+	//     }
+	//
+	//     // add entries to be updated
+	//     for _, c := range content {
+	//       newEntries = append(newEntries, domain.DNSEntry{
+	//         Name:    entryName,
+	//         Expire:  expire,
+	//         Type:    entryType,
+	//         Content: c.(string),
+	//       })
+	//     }
+	//
+	//     err = repository.ReplaceDNSEntries(domainName, newEntries)
+	//
+	//     // TODO: I assume this error is because another (concurrent) request is currently updating the
+	//     // zone. As there is no specific error as there was for the SOAP API but behaviour is similar.
+	//     if err != nil && strings.Contains(err.Error(), "Internal error occurred") {
+	//       return resource.RetryableError(fmt.Errorf(": %s", err))
+	//     }
+	//     // // this happens on concurrent requests where another API request is accessing the same object
+	//     // if err != nil && strings.Contains(err.Error(), "OBJECT_IS_LOCKED") {
+	//     //   return resource.RetryableError(fmt.Errorf("Domain is locked: %s", err))
+	//     // }
+	//     //
+	//     // // This happens on concurrent requests where another API request is accessing the same object or
+	//     // // a race condition where the previously read object was modified and saved.
+	//     // // SOAP Fault 100: Je probeert een oude versie van dit object op te slaan. Er is al een nieuwere versie beschikbaar.
+	//     // // SOAP Fault 100: Er is een interne fout opgetreden, neem a.u.b. contact op met support. (OBJECT_IS_LOCKED)
+	//     // if err != nil && strings.Contains(err.Error(), "SOAP Fault 100") {
+	//     //   return resource.RetryableError(fmt.Errorf("Domain object is locked or changed during API call: %s", err))
+	//     // }
+	//
+	//     if err != nil {
+	//       return resource.NonRetryableError(
+	//         fmt.Errorf("failed to update DNS entries for domain %s: %s", domainName, err))
+	//     }
+	//
+	//     return resource.NonRetryableError(resourceDNSRecordRead(d, m))
+	// })
 }
 
 func resourceDNSRecordDelete(d *schema.ResourceData, m interface{}) error {

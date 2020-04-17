@@ -22,6 +22,8 @@ Download the latest binary release from the [Releases](https://github.com/aequit
 
 - The Transip API managed DNS Entries as a list property of a Domain object. In this implementation I have opted to give DNS entries their own resource `transip_dns_record` to make management more in line with other Terraform DNS Providers.
 
+- Concurrently updating of DNS Entries is currently unstable. To improve reliability run Terraform with `-parallelism=1`.
+
 ## Example
 
 ```hcl
