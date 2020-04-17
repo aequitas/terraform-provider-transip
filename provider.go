@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/transip/gotransip/v5"
+	"github.com/transip/gotransip/v6"
+	"strings"
 )
 
 func Provider() *schema.Provider {
@@ -22,6 +22,12 @@ func Provider() *schema.Provider {
 				Description: "Contents of the private key file to be used to authenticate.",
 				DefaultFunc: schema.EnvDefaultFunc("TRANSIP_PRIVATE_KEY", nil),
 			},
+			// "access_token": &schema.Schema{
+			//   Type:        schema.TypeString,
+			//   Required:    true,
+			//   Description: "Temporary access token used for authentication.",
+			//   DefaultFunc: schema.EnvDefaultFunc("TRANSIP_ACCESS_TOKEN", nil),
+			// },
 			"read_only": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -33,9 +39,9 @@ func Provider() *schema.Provider {
 		ConfigureFunc: providerConfigure,
 
 		ResourcesMap: map[string]*schema.Resource{
-			"transip_dns_record": resourceDNSRecord(),
-			"transip_domain":     resourceDomain(),
-			"transip_vps":        resourceVps(),
+			// "transip_dns_record": resourceDNSRecord(),
+			// "transip_domain":     resourceDomain(),
+			// "transip_vps":        resourceVps(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -56,10 +62,12 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		return nil, fmt.Errorf("private_key not provided")
 	}
 
-	client, err := gotransip.NewSOAPClient(gotransip.ClientConfig{
-		AccountName:    d.Get("account_name").(string),
-		PrivateKeyBody: []byte(private_key_body),
-		Mode:           apiMode,
+	private_key := strings.NewReader(private_key_body)
+
+	client, err := gotransip.NewClient(gotransip.ClientConfiguration{
+		AccountName:      d.Get("account_name").(string),
+		PrivateKeyReader: private_key,
+		Mode:             apiMode,
 	})
 	if err != nil {
 		return nil, err

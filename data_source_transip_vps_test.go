@@ -8,17 +8,17 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccTransipDataSourceDomain(t *testing.T) {
-	var testConfig = `data "transip_domain" "test" {name = "%s"}`
+func TestAccTransipDataSourceVps(t *testing.T) {
+	var testConfig = `data "transip_vps" "test" {name = "%s"}`
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testConfig, os.Getenv("TRANSIP_TEST_DOMAIN")),
+				Config: fmt.Sprintf(testConfig, os.Getenv("TRANSIP_TEST_VPS")),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.transip_domain.test", "is_transfer_locked", "false"),
+					resource.TestCheckResourceAttr("data.transip_vps.test", "status", "running"),
 				),
 			},
 		},
