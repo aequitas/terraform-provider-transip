@@ -5,8 +5,18 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/authenticator"
+	"os"
 	"strings"
 )
+
+func envBoolFunc(k string) schema.SchemaDefaultFunc {
+	return func() (interface{}, error) {
+		if v := os.Getenv(k); v == "1" {
+			return true, nil
+		}
+		return false, nil
+	}
+}
 
 func Provider() *schema.Provider {
 	return &schema.Provider{
@@ -18,22 +28,30 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("TRANSIP_ACCOUNT_NAME", nil),
 			},
 			"private_key": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Contents of the private key file to be used to authenticate.",
-				DefaultFunc: schema.EnvDefaultFunc("TRANSIP_PRIVATE_KEY", nil),
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Contents of the private key file to be used to authenticate.",
+				DefaultFunc:   schema.EnvDefaultFunc("TRANSIP_PRIVATE_KEY", nil),
+				ConflictsWith: []string{"access_token"},
 			},
-			// "access_token": &schema.Schema{
-			//   Type:        schema.TypeString,
-			//   Required:    true,
-			//   Description: "Temporary access token used for authentication.",
-			//   DefaultFunc: schema.EnvDefaultFunc("TRANSIP_ACCESS_TOKEN", nil),
-			// },
+			"access_token": &schema.Schema{
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Temporary access token used for authentication.",
+				DefaultFunc:   schema.EnvDefaultFunc("TRANSIP_ACCESS_TOKEN", nil),
+				ConflictsWith: []string{"private_key"},
+			},
 			"read_only": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Disable API write calls.",
 				Default:     false,
+			},
+			"test_mode": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Use API test mode.",
+				DefaultFunc: envBoolFunc("TRANSIP_TEST_MODE"),
 			},
 		},
 
@@ -58,12 +76,13 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		apiMode = gotransip.APIModeReadOnly
 	}
 
-	private_key_body := d.Get("private_key").(string)
-	if private_key_body == "" {
-		return nil, fmt.Errorf("private_key not provided")
-	}
+	testMode := d.Get("test_mode").(bool)
 
-	private_key := strings.NewReader(private_key_body)
+	private_key_body := d.Get("private_key").(string)
+	access_token := d.Get("access_token").(string)
+	if private_key_body == "" && access_token == "" {
+		return nil, fmt.Errorf("either private_key or access_token must be provided")
+	}
 
 	// TODO: provide better destination for cache, preferrably terraform native or os native
 	cache, err := authenticator.NewFileTokenCache("/tmp/gotransip_token_cache")
@@ -71,12 +90,28 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		panic(err.Error())
 	}
 
-	client, err := gotransip.NewClient(gotransip.ClientConfiguration{
-		AccountName:      d.Get("account_name").(string),
-		PrivateKeyReader: private_key,
-		Mode:             apiMode,
-		TokenCache:       cache,
-	})
+	var client_configuration gotransip.ClientConfiguration
+
+	if private_key_body != "" {
+		private_key := strings.NewReader(private_key_body)
+
+		client_configuration = gotransip.ClientConfiguration{
+			AccountName:      d.Get("account_name").(string),
+			PrivateKeyReader: private_key,
+			Mode:             apiMode,
+			TestMode:         testMode,
+			TokenCache:       cache,
+		}
+	} else {
+		client_configuration = gotransip.ClientConfiguration{
+			AccountName: d.Get("account_name").(string),
+			Mode:        apiMode,
+			TestMode:    testMode,
+			Token:       access_token,
+		}
+	}
+
+	client, err := gotransip.NewClient(client_configuration)
 	if err != nil {
 		return nil, err
 	}

@@ -162,6 +162,8 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 
 		dnsEntries, err := repository.GetDNSEntries(domainName)
 		if err != nil {
+			// This error props up often when doing concurrent requests, so probably related to
+			// internal locking of the database? Similar as with the SOAP API.
 			if strings.Contains(err.Error(), "Internal error occurred, please contact our support") {
 				return resource.RetryableError(fmt.Errorf("failed to get existing DNS record entries for domain %s: %s", domainName, err))
 			}
@@ -178,6 +180,8 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 			// remove all entries for the current entry/expiry/type combination
 			err := repository.RemoveDNSEntry(domainName, existingEntry)
 			if err != nil {
+				// This error props up often when doing concurrent requests, so probably related to
+				// internal locking of the database? Similar as with the SOAP API.
 				if strings.Contains(err.Error(), "Internal error occurred, please contact our support") {
 					return resource.RetryableError(fmt.Errorf("failed to remove DNS record entry for domain %s (%v): %s", domainName, existingEntry, err))
 				}
@@ -205,72 +209,6 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 
 		return resource.NonRetryableError(resourceDNSRecordRead(d, m))
 	})
-
-	// var newEntries []domain.DNSEntry
-	//   for _, c := range content {
-	//     newEntries = append(newEntries, domain.DNSEntry{
-	//       Name:    entryName,
-	//       Expire:  expire,
-	//       Type:    entryType,
-	//       Content: c.(string),
-	//     })
-	//   }
-	//
-	//
-
-	//   return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-	//     dnsEntries, err := repository.GetDNSEntries(domainName)
-	//     if err != nil {
-	//       return resource.NonRetryableError(
-	//         fmt.Errorf("failed to get existing DNS record entries for domain %s: %s", domainName, err))
-	//     }
-	//
-	//     // create list of existing entries without the entry that's being updated
-	//     var newEntries []domain.DNSEntry
-	//     for _, e := range dnsEntries {
-	//       if e.Name == entryName && e.Type == entryType {
-	//         continue
-	//       }
-	//       newEntries = append(newEntries, e)
-	//     }
-	//
-	//     // add entries to be updated
-	//     for _, c := range content {
-	//       newEntries = append(newEntries, domain.DNSEntry{
-	//         Name:    entryName,
-	//         Expire:  expire,
-	//         Type:    entryType,
-	//         Content: c.(string),
-	//       })
-	//     }
-	//
-	//     err = repository.ReplaceDNSEntries(domainName, newEntries)
-	//
-	//     // TODO: I assume this error is because another (concurrent) request is currently updating the
-	//     // zone. As there is no specific error as there was for the SOAP API but behaviour is similar.
-	//     if err != nil && strings.Contains(err.Error(), "Internal error occurred") {
-	//       return resource.RetryableError(fmt.Errorf(": %s", err))
-	//     }
-	//     // // this happens on concurrent requests where another API request is accessing the same object
-	//     // if err != nil && strings.Contains(err.Error(), "OBJECT_IS_LOCKED") {
-	//     //   return resource.RetryableError(fmt.Errorf("Domain is locked: %s", err))
-	//     // }
-	//     //
-	//     // // This happens on concurrent requests where another API request is accessing the same object or
-	//     // // a race condition where the previously read object was modified and saved.
-	//     // // SOAP Fault 100: Je probeert een oude versie van dit object op te slaan. Er is al een nieuwere versie beschikbaar.
-	//     // // SOAP Fault 100: Er is een interne fout opgetreden, neem a.u.b. contact op met support. (OBJECT_IS_LOCKED)
-	//     // if err != nil && strings.Contains(err.Error(), "SOAP Fault 100") {
-	//     //   return resource.RetryableError(fmt.Errorf("Domain object is locked or changed during API call: %s", err))
-	//     // }
-	//
-	//     if err != nil {
-	//       return resource.NonRetryableError(
-	//         fmt.Errorf("failed to update DNS entries for domain %s: %s", domainName, err))
-	//     }
-	//
-	//     return resource.NonRetryableError(resourceDNSRecordRead(d, m))
-	// })
 }
 
 func resourceDNSRecordDelete(d *schema.ResourceData, m interface{}) error {

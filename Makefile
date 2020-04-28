@@ -1,17 +1,40 @@
 version = $(shell git describe --tags --abbrev=0)
+os = $(shell uname -s|tr '[:upper:]' '[:lower:]')
+arch = amd64
 
-all: test release
+release_ext ?= tgz
+
+all: test install release
 
 releases = \
-	terraform-provider-transip_${version}_darwin_amd64.tgz \
-	terraform-provider-transip_${version}_linux_amd64.tgz
+	terraform-provider-transip_${version}_darwin_${arch}.${release_ext} \
+	terraform-provider-transip_${version}_linux_${arch}.${release_ext}
 
 release: ${releases}
 
-terraform-provider-transip_${version}_%_amd64.tgz: build/%_amd64/terraform-provider-transip_v${version}
+builds = \
+	build/darwin_${arch}/terraform-provider-transip_v${version} \
+	build/linux_${arch}/terraform-provider-transip_v${version}
+
+build: ${builds}
+
+init: .terraform/plugins/darwin_amd64/lock.json
+
+.terraform/plugins/darwin_amd64/lock.json: terraform.d/plugins/${os}_${arch}/terraform-provider-transip_v${version}
+	terraform init examples/
+
+install: terraform.d/plugins/${os}_${arch}/terraform-provider-transip_v${version}
+terraform.d/plugins/${os}_${arch}/terraform-provider-transip_v${version}:  build/${os}_${arch}/terraform-provider-transip_v${version}
+	mkdir -p ${@D}
+	cp $< $@
+
+terraform-provider-transip_${version}_%_${arch}.zip: build/%_${arch}/terraform-provider-transip_v${version}
+	zip $@ $<
+
+terraform-provider-transip_${version}_%_${arch}.tgz: build/%_${arch}/terraform-provider-transip_v${version}
 	tar -zcf $@ -C ${<D} ${<F}
 
-build/%_amd64/terraform-provider-transip_v${version}: $(wildcard *.go)
+build/%_${arch}/terraform-provider-transip_v${version}: $(wildcard *.go)
 	mkdir -p ${@D}; GOOS=$* go build -o $@
 
 test_integration: test
