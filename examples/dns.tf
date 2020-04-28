@@ -4,10 +4,17 @@ variable "domain" {
   default = "example.com"
 }
 
+# order domain, or use `terraform import transip_domain.test example.com` to import existing one
+resource "transip_domain" "test" {
+  name = var.domain
+}
+
+# use existing domain as data resource instead
 data "transip_domain" "demo" {
   name = var.domain
 }
 
+# create a www CNAME record
 resource "transip_dns_record" "www" {
   domain  = data.transip_domain.demo.id
   name    = "www"
@@ -15,6 +22,7 @@ resource "transip_dns_record" "www" {
   content = ["@"]
 }
 
+# create a record with multiple addresses
 resource "transip_dns_record" "demo" {
   domain  = data.transip_domain.demo.id
   name    = "demo"
@@ -29,6 +37,22 @@ resource "transip_dns_record" "demo" {
   ]
 }
 
-resource "transip_domain" "test" {
-  name = var.domain
+# use address of existing VPS as content for an A record
+resource "transip_dns_record" "vps" {
+  domain  = data.transip_domain.demo.id
+  name    = "vps"
+  type    = "A"
+  content = [
+    transip_vps.test.ip_address
+  ]
+}
+
+# same but for IPv6
+resource "transip_dns_record" "vps_v6" {
+  domain  = data.transip_domain.demo.id
+  name    = "vps"
+  type    = "AAAA"
+  content = [
+    transip_vps.test.ipv6_addresses[0]
+  ]
 }

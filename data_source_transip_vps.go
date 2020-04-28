@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/transip/gotransip/v6/repository"
 	"github.com/transip/gotransip/v6/vps"
@@ -44,11 +43,7 @@ func dataSourceVps() *schema.Resource {
 				Computed: true,
 				Type:     schema.TypeString,
 			},
-			"ipv4_address": {
-				Computed: true,
-				Type:     schema.TypeString,
-			},
-			"ipv6_address": {
+			"ip_address": {
 				Computed: true,
 				Type:     schema.TypeString,
 			},
@@ -79,6 +74,20 @@ func dataSourceVps() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"ipv4_addresses": {
+				Computed: true,
+				Type:     schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"ipv6_address": {
+				Computed: true,
+				Type:     schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -91,6 +100,22 @@ func dataSourceVpsRead(d *schema.ResourceData, m interface{}) error {
 	v, err := repository.GetByName(name)
 	if err != nil {
 		return fmt.Errorf("failed to lookup vps %q: %s", name, err)
+	}
+
+	ipAddresses, err := repository.GetIPAddresses(name)
+	if err != nil {
+		return fmt.Errorf("failed to lookup vps %q: %s", name, err)
+	}
+
+	var ipv4Addresses []string
+	var ipv6Addresses []string
+	for _, address := range ipAddresses {
+		if len(address.Address) == 4 {
+			ipv4Addresses = append(ipv4Addresses, address.Address.String())
+		}
+		if len(address.Address) == 16 {
+			ipv6Addresses = append(ipv6Addresses, address.Address.String())
+		}
 	}
 
 	d.SetId(v.Name)
@@ -109,6 +134,8 @@ func dataSourceVpsRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("is_customer_locked", v.IsCustomerLocked)
 	d.Set("availability_zone", v.AvailabilityZone)
 	d.Set("tags", v.Tags)
+	d.Set("ipv4_addresses", ipv4Addresses)
+	d.Set("ipv6_addresses", ipv6Addresses)
 
 	return nil
 }

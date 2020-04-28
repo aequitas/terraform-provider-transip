@@ -51,7 +51,7 @@ data "transip_domain" "example_com" {
 
 # Simple CNAME record
 resource "transip_dns_record" "www" {
-  domain  = "${data.transip_domain.example_com.id}"
+  domain  = data.transip_domain.example_com.id
   name    = "www"
   type    = "CNAME"
   content = ["@"]
@@ -59,21 +59,21 @@ resource "transip_dns_record" "www" {
 
 # VPS Server with DNS record
 resource "transip_vps" "test" {
-  name = "test"
+  name = "example"
   product_name = "vps-bladevps-x1"
   operating_system = "ubuntu-18.04"
 }
 resource "transip_dns_record" "vps" {
-  domain = "${data.transip_domain.example_com.id}"
+  domain = data.transip_domain.example_com.id
   name   = "vps"
   type   = "A"
 
-  content = [ "${transip_vps.test.ipv4_address}" ]
+  content = [ transip_vps.test.ipv4_address ]
 }
 
 # A record with multiple entries, eg: for round robin DNS
 resource "transip_dns_record" "test" {
-  domain = "${data.transip_domain.example_com.id}"
+  domain = data.transip_domain.example_com.id
   name   = "test"
   type   = "A"
 
@@ -85,7 +85,7 @@ resource "transip_dns_record" "test" {
 
 # IPv6 record
 resource "transip_dns_record" "testv6" {
-  domain = "${data.transip_domain.example_com.id}"
+  domain = data.transip_domain.example_com.id
   name   = "test"
   expire = 300
   type   = "AAAA"
@@ -102,21 +102,19 @@ data "transip_vps" "test" {
 
 # Set hostname for VPS using data source
 resource "transip_dns_record" "vps" {
-  domain = "${data.transip_domain.example_com.id}"
+  domain = data.transip_domain.example_com.id
   name   = "vps"
   type   = "A"
 
-  content = ["${data.transip_vps.test.ipv4_address}"]
+  content = [data.transip_vps.test.ip_address]
 }
 resource "transip_dns_record" "vps" {
-  domain = "${data.transip_domain.example_com.id}"
+  domain = data.transip_domain.example_com.id
   name   = "vps"
   type   = "AAAA"
 
-  content = ["${data.transip_vps.test.ipv6_address}"]
+  content = [data.transip_vps.test.ipv6_addresses[0]]
 }
 ```
 
-## Roadmap
 
-- VPS (resource)
