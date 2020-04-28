@@ -22,7 +22,7 @@ func TestAccTransipResourceDomain(t *testing.T) {
 		type    = "CNAME"
 		content = ["@"]
 	}
-	`, os.Getenv("TRANSIP_TEST_DOMAIN"), timestamp)
+	`, os.Getenv("TF_VAR_domain"), timestamp)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -51,7 +51,7 @@ func TestAccTransipResourceDomainMultiple(t *testing.T) {
 		type    = "A"
 		content = ["192.0.2.0", "192.0.2.1", "192.0.2.2", "192.0.2.3"]
 	}
-	`, os.Getenv("TRANSIP_TEST_DOMAIN"), timestamp)
+	`, os.Getenv("TF_VAR_domain"), timestamp)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -90,7 +90,7 @@ func TestAccTransipResourceDomainConcurrent(t *testing.T) {
 		type    = "CNAME"
 		content = ["@"]
 	}
-	`, os.Getenv("TRANSIP_TEST_DOMAIN"), timestamp, timestamp)
+	`, os.Getenv("TF_VAR_domain"), timestamp, timestamp)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -130,7 +130,7 @@ func TestAccTransipResourceDomainConcurrentMultiple(t *testing.T) {
 		type    = "A"
 		content =  ["192.0.2.2", "192.0.2.3"]
 	}
-	`, os.Getenv("TRANSIP_TEST_DOMAIN"), timestamp, timestamp)
+	`, os.Getenv("TF_VAR_domain"), timestamp, timestamp)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -162,7 +162,7 @@ func TestAccTransipResourceDomainUpdate(t *testing.T) {
 		type    = "A"
 		content = ["192.0.2.0", "192.0.2.1"]
 	}
-  `, os.Getenv("TRANSIP_TEST_DOMAIN"), timestamp)
+  `, os.Getenv("TF_VAR_domain"), timestamp)
 	testConfig2 := fmt.Sprintf(`
 	terraform { required_version = ">= 0.12.0" }
 
@@ -176,7 +176,7 @@ func TestAccTransipResourceDomainUpdate(t *testing.T) {
 		type    = "A"
 		content =  ["192.0.2.2", "192.0.2.3"]
 	}
-	`, os.Getenv("TRANSIP_TEST_DOMAIN"), timestamp)
+	`, os.Getenv("TF_VAR_domain"), timestamp)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

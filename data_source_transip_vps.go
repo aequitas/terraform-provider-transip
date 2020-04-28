@@ -84,9 +84,9 @@ func dataSourceVps() *schema.Resource {
 }
 
 func dataSourceVpsRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(repository.Client)
 	name := d.Get("name").(string)
 
+	client := m.(repository.Client)
 	repository := vps.Repository{Client: client}
 	v, err := repository.GetByName(name)
 	if err != nil {

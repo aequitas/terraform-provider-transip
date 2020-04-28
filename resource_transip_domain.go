@@ -18,6 +18,10 @@ func resourceDomain() *schema.Resource {
 		// Update: resourceDomainUpdate,
 		Delete: resourceDomainDelete,
 
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
@@ -61,7 +65,7 @@ func resourceDomainCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
-	name := d.Get("name").(string)
+	name := d.Id()
 
 	client := m.(repository.Client)
 	repository := domain.Repository{Client: client}
@@ -72,6 +76,8 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(i.Name)
+
+	d.Set("name", name)
 
 	return nil
 }

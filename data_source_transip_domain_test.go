@@ -16,7 +16,7 @@ func TestAccTransipDataSourceDomain(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testConfig, os.Getenv("TRANSIP_TEST_DOMAIN")),
+				Config: fmt.Sprintf(testConfig, os.Getenv("TF_VAR_domain")),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.transip_domain.test", "is_transfer_locked", "false"),
 				),

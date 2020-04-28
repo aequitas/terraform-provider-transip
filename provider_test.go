@@ -36,7 +36,7 @@ func testAccPreCheck(t *testing.T) {
 		t.Fatal("TRANSIP_PRIVATE_KEY must be set for acceptance tests")
 	}
 
-	if v := os.Getenv("TRANSIP_TEST_DOMAIN"); v == "" {
-		t.Fatal("TRANSIP_TEST_DOMAIN must be set for acceptance tests")
+	if v := os.Getenv("TF_VAR_domain"); v == "" {
+		t.Fatal("TF_VAR_domain must be set for acceptance tests")
 	}
 }

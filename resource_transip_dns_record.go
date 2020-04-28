@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	// "log"
+	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -158,7 +158,7 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 	repository := domain.Repository{Client: client}
 
 	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		fmt.Printf("[INFO] terraform-provider-transip update %s\n", entryName)
+		log.Printf("[DEBUG] terraform-provider-transip update %s\n", entryName)
 
 		dnsEntries, err := repository.GetDNSEntries(domainName)
 		if err != nil {
@@ -176,7 +176,7 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 			if existingEntry.Name != entryName || existingEntry.Type != entryType {
 				continue
 			}
-			fmt.Printf("[INFO] terraform-provider-transip %s removing %v\n", entryName, existingEntry)
+			log.Printf("[DEBUG] terraform-provider-transip %s removing %v\n", entryName, existingEntry)
 			// remove all entries for the current entry/expiry/type combination
 			err := repository.RemoveDNSEntry(domainName, existingEntry)
 			if err != nil {
@@ -197,7 +197,7 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 				Type:    entryType,
 				Content: c.(string),
 			}
-			fmt.Printf("[INFO] terraform-provider-transip: %s adding %v\n", entryName, dnsEntry)
+			log.Printf("[DEBUG] terraform-provider-transip: %s adding %v\n", entryName, dnsEntry)
 			err := repository.AddDNSEntry(domainName, dnsEntry)
 			if err != nil {
 				if strings.Contains(err.Error(), "Internal error occurred, please contact our support") {

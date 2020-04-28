@@ -18,6 +18,18 @@ builds = \
 
 build: ${builds}
 
+# import test resources
+import: init
+	terraform import -config examples/ transip_domain.test $$TF_VAR_domain
+	terraform import -config examples/ transip_vps.test $$TF_VAR_vps_name
+	terraform state list | xargs -n1 terraform state show
+
+apply: init
+	terraform apply -parallelism=1 examples/
+
+plan: init
+	terraform plan examples/
+
 init: .terraform/plugins/darwin_amd64/lock.json
 
 .terraform/plugins/darwin_amd64/lock.json: terraform.d/plugins/${os}_${arch}/terraform-provider-transip_v${version}
@@ -45,6 +57,7 @@ test:
 
 clean:
 	rm -rf terraform-provider-transip* build/
+	rm -rf .terraform/ terraform.tfstate
 
 mrproper: clean
 	go clean -modcache
