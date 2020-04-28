@@ -129,5 +129,3 @@ resource "transip_dns_record" "vps" {
   content = [data.transip_vps.test.ipv6_addresses[0]]
 }
 ```
-
-

@@ -16,7 +16,7 @@ func TestAccTransipDataSourceVps(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testConfig, os.Getenv("TRANSIP_TEST_VPS")),
+				Config: fmt.Sprintf(testConfig, os.Getenv("TF_VAR_vps_name")),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.transip_vps.test", "status", "running"),
 				),
