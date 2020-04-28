@@ -6,6 +6,7 @@ import (
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/authenticator"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -84,8 +85,18 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		return nil, fmt.Errorf("either private_key or access_token must be provided")
 	}
 
-	// TODO: provide better destination for cache, preferrably terraform native or os native
-	cache, err := authenticator.NewFileTokenCache("/tmp/gotransip_token_cache")
+	var cacheDir string
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		cacheDir = os.TempDir()
+	}
+	cacheFile := filepath.Join(cacheDir, "gotransip_test_token_cache")
+	// create cachefile with restricted permissions
+	_, err = os.OpenFile(cacheFile, os.O_CREATE, 0600)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create token cache dir")
+	}
+	cache, err := authenticator.NewFileTokenCache(cacheFile)
 	if err != nil {
 		panic(err.Error())
 	}
