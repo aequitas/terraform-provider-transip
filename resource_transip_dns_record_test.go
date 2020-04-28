@@ -17,7 +17,7 @@ func TestAccTransipResourceDomain(t *testing.T) {
 	}
 
 	resource "transip_dns_record" "test1" {
-		domain  = "${data.transip_domain.test.id}"
+		domain  = data.transip_domain.test.id
 		name    = "terraform-provider-transip1-%d"
 		type    = "CNAME"
 		content = ["@"]
@@ -46,7 +46,7 @@ func TestAccTransipResourceDomainMultiple(t *testing.T) {
 	}
 
 	resource "transip_dns_record" "test2" {
-		domain  = "${data.transip_domain.test.id}"
+		domain  = data.transip_domain.test.id
 		name    = "terraform-provider-transip2-%d"
 		type    = "A"
 		content = ["192.0.2.0", "192.0.2.1", "192.0.2.2", "192.0.2.3"]

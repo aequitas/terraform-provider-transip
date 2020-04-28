@@ -24,6 +24,8 @@ Download the latest binary release from the [Releases](https://github.com/aequit
 
 - Concurrently updating of DNS Entries is currently unstable. To improve reliability run Terraform with `-parallelism=1`.
 
+- Not all resources (especially the VPS resource) have been thoroughly tested. Use with care.
+
 ## Example
 
 ```hcl
@@ -33,7 +35,7 @@ variable "private_key" {}
 # Configure the provider
 provider "transip" {
   account_name = "example"
-  private_key  = "${var.private_key}"
+  private_key  = var.private_key
 }
 
 # Or simply empty when using the environment variables TRANSIP_ACCOUNT_NAME and TRANSIP_PRIVATE_KEY
