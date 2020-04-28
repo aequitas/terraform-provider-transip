@@ -8,7 +8,7 @@ Supported resources:
 
     - Domain name (data source, resource)
     - Domain name DNS records (resource)
-    - VPS (data source)
+    - VPS (data source, resource)
 
 ## Requirements
 
@@ -28,17 +28,20 @@ Download the latest binary release from the [Releases](https://github.com/aequit
 
 ## Example
 
+Also see examples in: [examples/](https://github.com/aequitas/terraform-provider-transip/tree/master/examples).
+
 ```hcl
 # Enable Transip API, whitelist your IP, create private key and provide it here
-variable "private_key" {}
-
-# Configure the provider
 provider "transip" {
   account_name = "example"
-  private_key  = var.private_key
+  private_key  = <<EOF
+  -----BEGIN PRIVATE KEY-----
+  ...
+  -----END PRIVATE KEY-----
+  EOF
 }
 
-# Or simply empty when using the environment variables TRANSIP_ACCOUNT_NAME and TRANSIP_PRIVATE_KEY
+# Or simply leave the provider empty when using the environment variables TRANSIP_ACCOUNT_NAME and TRANSIP_PRIVATE_KEY
 # provider "transip" { }
 
 # Get an existing domain as data source
@@ -59,7 +62,7 @@ resource "transip_dns_record" "www" {
   content = ["@"]
 }
 
-# VPS Server with DNS record
+# VPS Server with setup script and DNS record
 resource "transip_vps" "test" {
   name = "example"
   product_name = "vps-bladevps-x1"
@@ -81,7 +84,7 @@ resource "transip_dns_record" "vps" {
   name   = "vps"
   type   = "A"
 
-  content = [ transip_vps.test.ipv4_address ]
+  content = [ transip_vps.test.ip_address ]
 }
 
 # A record with multiple entries, eg: for round robin DNS
@@ -110,7 +113,7 @@ resource "transip_dns_record" "testv6" {
 
 # Get an existing VPS as datasource
 data "transip_vps" "test" {
-  name = "test-vps"
+  name = "example"
 }
 
 # Set hostname for VPS using data source
