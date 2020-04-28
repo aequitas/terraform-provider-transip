@@ -62,6 +62,17 @@ resource "transip_vps" "test" {
   name = "example"
   product_name = "vps-bladevps-x1"
   operating_system = "ubuntu-18.04"
+
+  # Script to run to provision the VPS
+  install_text = <<EOF
+  # install and enable firewall and basic webserver
+  apt update
+  apt install -yqq ufw nginx
+  ufw allow 22/tcp
+  ufw allow 80/tcp
+  ufw allow 443/tcp
+  ufw --force enable
+  EOF
 }
 resource "transip_dns_record" "vps" {
   domain = data.transip_domain.example_com.id
