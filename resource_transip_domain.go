@@ -6,8 +6,9 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/transip/gotransip/v5"
-	"github.com/transip/gotransip/v5/domain"
+	"github.com/transip/gotransip/v6"
+	"github.com/transip/gotransip/v6/domain"
+	"github.com/transip/gotransip/v6/repository"
 )
 
 func resourceDomain() *schema.Resource {
@@ -29,26 +30,29 @@ func resourceDomain() *schema.Resource {
 }
 
 func resourceDomainCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(gotransip.Client)
 	name := d.Get("name").(string)
 
-	dom := domain.Domain{Name: name}
+	client := m.(repository.Client)
+	repository := domain.Repository{Client: client}
 
-	_, err := domain.Register(client, dom)
+	register := domain.Register{
+		DomainName: name,
+	}
+	err := repository.Register(register)
 	if err != nil {
 		return fmt.Errorf("failed to register domain %q: %s", name, err)
 	}
 
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		var err error
-		_, err = domain.GetInfo(client, name)
+		_, err = repository.GetByDomainName(name)
 		if err != nil {
 			return resource.RetryableError(err)
 		}
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error creating domain: %s", err)
+		return fmt.Errorf("Error waiting for domain to be created: %s", err)
 	}
 
 	d.SetId(name)
@@ -57,32 +61,17 @@ func resourceDomainCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(gotransip.Client)
 	name := d.Get("name").(string)
 
-	i, err := domain.GetInfo(client, name)
+	client := m.(repository.Client)
+	repository := domain.Repository{Client: client}
 
-	// if domain does not exist, inform Terraform and gracefuly exit
-	if err != nil && err.Error() == "SOAP Fault 102: One or more domains could not be found." {
-		d.SetId("")
-		return nil
-	}
+	i, err := repository.GetByDomainName(name)
 	if err != nil {
 		return fmt.Errorf("failed to lookup domain %q: %s", name, err)
 	}
 
-	var nameservers []map[string]string
-	for _, n := range i.Nameservers {
-		nameservers = append(nameservers, map[string]string{
-			"hostname":     n.Hostname,
-			"ipv4_address": n.IPv4Address.String(),
-			"ipv6_address": n.IPv6Address.String(),
-		})
-	}
-
 	d.SetId(i.Name)
-	d.Set("is_locked", i.IsLocked)
-	d.Set("nameservers", nameservers)
 
 	return nil
 }
@@ -92,10 +81,12 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 // }
 
 func resourceDomainDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(gotransip.Client)
 	name := d.Get("name").(string)
 
-	err := domain.Cancel(client, name, gotransip.CancellationTimeImmediately)
+	client := m.(repository.Client)
+	repository := domain.Repository{Client: client}
+
+	err := repository.Cancel(name, gotransip.CancellationTimeImmediately)
 	if err != nil {
 		return fmt.Errorf("failed to cancel domain %q: %s", name, err)
 	}
