@@ -3,14 +3,18 @@ package main
 import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
+	"time"
 
 	"github.com/hashicorp/terraform/terraform"
 	"os"
 	"testing"
 )
 
-func TestAccTransipResourceVps(t *testing.T) {
+func TestAccTransipResourceVpsImport(t *testing.T) {
 	vpsName := os.Getenv("TF_VAR_vps_name")
+	if vpsName == "" {
+		t.Skip("TF_VAR_vps_name not provided, skipping")
+	}
 	testConfig := fmt.Sprintf(`
 	resource "transip_vps" "test" {
 		name             = "%s"
@@ -34,6 +38,34 @@ func TestAccTransipResourceVps(t *testing.T) {
 					}
 					return nil
 				},
+			},
+		},
+	})
+}
+
+func TestAccTransipResourceVps(t *testing.T) {
+	if os.Getenv("THIS_IS_GOING_TO_COST_ME_MONEY") == "" {
+		t.Skip("THIS_IS_GOING_TO_COST_ME_MONEY not set, skipping")
+	}
+
+	timestamp := time.Now().Unix()
+	testConfig := fmt.Sprintf(`
+	resource "transip_vps" "test" {
+		name             = "test-%d"
+    product_name     = "vps-bladevps-x1"
+    operating_system = "ubuntu-20.04"
+	}
+	`, timestamp)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("transip_vps.test", "status", "running"),
+				),
 			},
 		},
 	})
