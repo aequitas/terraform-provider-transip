@@ -9,6 +9,10 @@ import (
 )
 
 func TestAccTransipDataSourceVps(t *testing.T) {
+	vpsName := os.Getenv("TF_VAR_vps_name")
+	if vpsName == "" {
+		t.Skip("TF_VAR_vps_name not provided, skipping")
+	}
 	var testConfig = `data "transip_vps" "test" {name = "%s"}`
 
 	resource.Test(t, resource.TestCase{
@@ -16,7 +20,7 @@ func TestAccTransipDataSourceVps(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testConfig, os.Getenv("TF_VAR_vps_name")),
+				Config: fmt.Sprintf(testConfig, vpsName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.transip_vps.test", "status", "running"),
 				),

@@ -136,6 +136,21 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Product %s is invalid. Valid product names are: %v", productName, availableProducts)
 	}
 
+	// query with fake vps name "x"
+	availableOss, err := repository.GetOperatingSystems("x")
+	if err != nil {
+		return fmt.Errorf("Failed to get available operating systems: %s", err)
+	}
+	validOs := false
+	for _, os := range availableOss {
+		if os.Name == operatingSystem {
+			validOs = true
+		}
+	}
+	if !validOs {
+		return fmt.Errorf("Operating system %s is invalid. Valid operating system names are: %v", operatingSystem, availableOss)
+	}
+
 	base64InstallText := base64.StdEncoding.EncodeToString([]byte(InstallText))
 
 	vpsOrder := vps.Order{
