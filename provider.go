@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/transip/gotransip/v6"
-	"github.com/transip/gotransip/v6/authenticator"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/transip/gotransip/v6"
+	"github.com/transip/gotransip/v6/authenticator"
 )
 
 func envBoolFunc(k string) schema.SchemaDefaultFunc {
@@ -59,9 +60,11 @@ func Provider() *schema.Provider {
 		ConfigureFunc: providerConfigure,
 
 		ResourcesMap: map[string]*schema.Resource{
-			"transip_dns_record": resourceDNSRecord(),
-			"transip_domain":     resourceDomain(),
-			"transip_vps":        resourceVps(),
+			"transip_dns_record":                 resourceDNSRecord(),
+			"transip_domain":                     resourceDomain(),
+			"transip_vps":                        resourceVps(),
+			"transip_private_network":            resourcePrivateNetwork(),
+			"transip_private_network_attachment": resourcePrivateNetworkAttachment(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{

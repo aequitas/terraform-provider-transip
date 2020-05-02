@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -51,12 +50,6 @@ func resourceVps() *schema.Resource {
 				ForceNew: true,
 			},
 			"install_text": {
-				Optional: true,
-				Type:     schema.TypeString,
-				Default:  "",
-				ForceNew: true,
-			},
-			"private_network": {
 				Optional: true,
 				Type:     schema.TypeString,
 				Default:  "",
@@ -127,7 +120,6 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 	availabilityZone := d.Get("availability_zone").(string)
 	addons := []string{}
 	InstallText := d.Get("install_text").(string)
-	privateNetwork := d.Get("private_network").(string)
 
 	client := m.(repository.Client)
 	repository := vps.Repository{Client: client}
@@ -166,10 +158,6 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 
 	d.Set("install_text", InstallText)
 	setVpsID(d, m)
-
-	if privateNetwork != "" {
-		attachPrivateNetwork(d, m)
-	}
 
 	return resourceVpsRead(d, m)
 }
@@ -234,34 +222,6 @@ func resourceVpsDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return nil
-}
-
-func attachPrivateNetwork(d *schema.ResourceData, m interface{}) error {
-	// Use unique ID from TransIP
-	id := d.Id()
-	name := d.Get("name").(string)
-	privateNetwork := d.Get("private_network").(string)
-
-	client := m.(repository.Client)
-	repository := vps.PrivateNetworkRepository{Client: client}
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		log.Printf("[DEBUG] terraform-provider-transip attaching VPS %s with id %s to private network %s \n", name, id, privateNetwork)
-
-		err := repository.AttachVps(id, privateNetwork)
-		if err != nil {
-			if strings.Contains(err.Error(), fmt.Sprintf("VPS with name '%s' not found", name)) || strings.Contains(err.Error(), "Identifier 'vpsName' missing") {
-				return resource.RetryableError(fmt.Errorf("Failed to attach VPS %s with unique-id %s to private network %s: %s", name, id, privateNetwork, err))
-			}
-			return resource.NonRetryableError(fmt.Errorf("Failed to attach VPS %s with unique-id %s to private network %s: %s", name, id, privateNetwork, err))
-		}
-		attached, err := repository.GetByName(privateNetwork)
-		for _, vps := range attached.VpsNames {
-			if vps == d.Id() {
-				return resource.NonRetryableError(resourceVpsRead(d, m))
-			}
-		}
-		return resource.RetryableError(fmt.Errorf("VPS %s with unique-id %s does not exist in private network %s: %s", name, id, privateNetwork, err))
-	})
 }
 
 func setVpsID(d *schema.ResourceData, m interface{}) error {
