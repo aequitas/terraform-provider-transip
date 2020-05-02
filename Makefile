@@ -4,7 +4,7 @@ arch = amd64
 
 release_ext ?= tgz
 
-all: test install release
+all: test install
 
 releases = \
 	terraform-provider-transip_${version}_darwin_${arch}.${release_ext} \
@@ -24,11 +24,14 @@ import: init
 	terraform import -config examples/ transip_vps.test $$TF_VAR_vps_name
 	terraform state list | xargs -n1 terraform state show
 
+comma=,
+_targets = $(addprefix -target=,$(subst ${comma}, ,${targets}))
+
 apply: init
-	terraform apply -parallelism=1 examples/
+	terraform apply -parallelism=1 ${_targets} examples/
 
 plan: init
-	terraform plan examples/
+	terraform plan -detailed-exitcode ${_targets} examples/
 
 init: .terraform/plugins/darwin_amd64/lock.json
 
@@ -49,8 +52,8 @@ terraform-provider-transip_${version}_%_${arch}.tgz: build/%_${arch}/terraform-p
 build/%_${arch}/terraform-provider-transip_v${version}: $(wildcard *.go)
 	mkdir -p ${@D}; GOOS=$* go build -o $@
 
-test_integration: test
-test_integration: TF_ACC=1
+test_acc: test
+test_acc: TF_ACC=1
 
 test:
 	TF_ACC=${TF_ACC} go test -v
