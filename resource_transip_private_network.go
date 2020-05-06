@@ -17,9 +17,9 @@ func resourcePrivateNetwork() *schema.Resource {
 		Read:   resourcePrivateNetworkRead,
 		// Update: resourcePrivateNetworkUpdate,
 		Delete: resourcePrivateNetworkDelete,
-		// Importer: &schema.ResourceImporter{
-		// 	State: schema.ImportStatePassthrough,
-		// },
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"description": {
 				Required: true,
