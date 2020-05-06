@@ -38,7 +38,6 @@ func dataSourcePrivateNetwork() *schema.Resource {
 			},
 		},
 	}
-	return nil
 }
 
 func dataSourcePrivateNetworkRead(d *schema.ResourceData, m interface{}) error {
