@@ -49,7 +49,7 @@ func dataSourcePrivateNetworkRead(d *schema.ResourceData, m interface{}) error {
 
 	p, err := repository.GetByName(name)
 	if err != nil {
-		return fmt.Errorf("failed to lookup private network %q: %s", d.Id(), err)
+		return fmt.Errorf("failed to lookup private network %q: %s", name, err)
 	}
 
 	log.Printf("[DEBUG] terraform-provider-transip success: private network %s found, getting details.\n", name)
