@@ -17,9 +17,9 @@ func resourcePrivateNetworkAttachment() *schema.Resource {
 		Read:   resourcePrivateNetworkAttachmentRead,
 		// Update: resourcePrivateNetworkUpdate,
 		Delete: resourcePrivateNetworkAttachmentDelete,
-		// Importer: &schema.ResourceImporter{
-		// 	State: schema.ImportStatePassthrough,
-		// },
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"private_network_id": {
 				Required: true,
@@ -95,10 +95,14 @@ func resourcePrivateNetworkAttachmentDelete(d *schema.ResourceData, m interface{
 
 	client := m.(repository.Client)
 	repository := vps.PrivateNetworkRepository{Client: client}
-
-	err := repository.DetachVps(vpsID, privateNetworkID)
-	if err != nil {
-		return fmt.Errorf("failed to detach private network %s to VPS %s: %s", privateNetworkID, vpsID, err)
-	}
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		err := repository.DetachVps(vpsID, privateNetworkID)
+		if err != nil {
+			if strings.Contains(err.Error(), fmt.Sprintf("VPS '%s' has an action running, no modification is allowed", vpsID)) {
+				return resource.RetryableError(fmt.Errorf("retrying to detach private network %s from VPS %s: %s", privateNetworkID, vpsID, err))
+			}
+		}
+		return nil
+	})
 	return nil
 }
