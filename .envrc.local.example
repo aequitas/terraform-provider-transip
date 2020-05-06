@@ -1,0 +1,18 @@
+# Set these variables and rename the file to .envrc.local
+# acceptance testing.
+# This file is in .gitignore so won't be commited to
+# Git, but it's still best to use a tool like keyring
+# to prevent credentials leaking.
+
+# name of the Transip account to use for testing
+export TRANSIP_ACCOUNT_NAME=example
+# private key of the Transip account mentioned above
+export TRANSIP_PRIVATE_KEY=$(keyring get transip $TRANSIP_ACCOUNT_NAME)
+
+# domain name to use for dns_record tests, new records
+# will be created and deleted during testing, but existing
+# records will not be touched.
+export TF_VAR_domain=example.com
+
+# name of VPS to use for testing, the VPS will be read from but not modified.
+export TF_VAR_vps_name=example-vps

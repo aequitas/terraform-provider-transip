@@ -132,3 +132,51 @@ resource "transip_dns_record" "vps" {
   content = [data.transip_vps.test.ipv6_addresses[0]]
 }
 ```
+
+## Development
+
+This project can be build and tested like any regular Go project or Terraform provider. For convenience a Makefile is provided which contains commands to easy recurring development tasks.
+
+[Direnv](https://direnv.net/) and [keyring](https://pypi.org/project/keyring/) are used to setup environment variables used during testing and to keep credentials out of the project directory.
+
+### Makefile
+
+To test build the project simple run:
+
+    make
+
+As will setup dependencies, build binaries in `./build/` and install them to `./terraform.d/plugins/` so they can be used for testing.
+
+When source files change te dependencies and binaries will automatically be rebuild (if required).
+
+### Test suites
+
+To run just the unit test suite (not requiring credentials or touching the API) run:
+
+    make test
+
+To run the acceptance test suite as well run:
+
+    make test_acc
+
+Note: the acceptance tests require Transip account credentials (username + certificate). The demo account won't work for this.
+
+To configure these refer to `.envrc.local.example` file.
+
+Warning: although care has been taken to prevent accidental modification of existing resource or unexpected costs to be made (by ordering product) this is not guaranteed. Use at own risk.
+
+### Testing .tf files
+
+To `plan` or `apply` the `.tf` files in `./examples/` you can run the following command:
+
+    make plan
+
+Or to apply:
+
+    make apply
+
+Source code is rebuild (if needed) and the plugin updated before running the Terraform command, allowing for quick iteration and debugging.
+
+To just target a single resource (and it dependants) use the `targets` argument like so:
+
+    make plan targets=transip_vps.test
