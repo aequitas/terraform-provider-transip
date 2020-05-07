@@ -45,7 +45,6 @@ func dataSourcePrivateNetworkRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(repository.Client)
 	repository := vps.PrivateNetworkRepository{Client: client}
 	name := d.Get("name").(string)
-	// getPrivateNetworkID(d, m)
 
 	p, err := repository.GetByName(name)
 	if err != nil {
