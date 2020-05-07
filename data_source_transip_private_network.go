@@ -70,27 +70,3 @@ func dataSourcePrivateNetworkRead(d *schema.ResourceData, m interface{}) error {
 
 	return nil
 }
-
-// func getPrivateNetworkID(d *schema.ResourceData, m interface{}) error {
-// 	description := d.Get("description").(string)
-// 	client := m.(repository.Client)
-// 	repository := vps.PrivateNetworkRepository{Client: client}
-
-// 	all, err := repository.GetAll()
-// 	if err != nil {
-// 		return fmt.Errorf("failed to get all private networks: %s", err)
-// 	}
-
-// 	found := false
-// 	for _, privateNetwork := range all {
-// 		if privateNetwork.Description == description {
-// 			d.SetId(privateNetwork.Name)
-// 			found = true
-// 			return nil
-// 		}
-// 	}
-// 	if !found {
-// 		return (fmt.Errorf("Private network with description %s not found", description))
-// 	}
-// 	return nil
-// }
