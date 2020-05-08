@@ -45,7 +45,7 @@ func resourceDNSRecord() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					"A", "AAAA", "CNAME", "MX", "NS", "TXT", "SRV", "SSHFP", "TLSA",
+					"A", "AAAA", "CAA", "CNAME", "MX", "NS", "TXT", "SRV", "SSHFP", "TLSA",
 				}, false),
 			},
 			"content": &schema.Schema{
