@@ -157,13 +157,31 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.Set("install_text", InstallText)
-	setVpsID(d, m)
 
-	return resourceVpsRead(d, m)
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		log.Printf("[DEBUG] terraform-provider-transip trying to get id for VPS %s \n", name)
+
+		// The set name in the Terraform resource is not the same as the name used to query details about a VPS.
+		// You'll need the unique name Transip generates to get the VPS details.
+		all, err := repository.GetAll()
+		if err != nil {
+			return resource.NonRetryableError(fmt.Errorf("failed to get all VPS's: %s", err))
+		}
+		for _, vps := range all {
+			if vps.Description == name {
+				d.SetId(vps.Name)
+				log.Printf("[DEBUG] terraform-provider-transip id found for VPS %s:%s \n", name, d.Id())
+			}
+		}
+		if d.Id() == "" {
+			return resource.RetryableError(fmt.Errorf("Failed to set ID for VPS %s", d.Id()))
+		}
+		return resource.NonRetryableError(resourceVpsRead(d, m))
+	})
 }
 
 func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
-	name := d.Get("name").(string)
+	name := d.Id()
 
 	client := m.(repository.Client)
 	repository := vps.Repository{Client: client}
@@ -222,31 +240,4 @@ func resourceVpsDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return nil
-}
-
-func setVpsID(d *schema.ResourceData, m interface{}) error {
-	name := d.Get("name").(string)
-
-	client := m.(repository.Client)
-	repository := vps.Repository{Client: client}
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		log.Printf("[DEBUG] terraform-provider-transip trying to get id for VPS %s \n", name)
-
-		// The set name in the Terraform resource is not the same as the name used to query details about a VPS.
-		// You'll need the unique name Transip generates to get the VPS details.
-		all, err := repository.GetAll()
-		if err != nil {
-			return resource.NonRetryableError(fmt.Errorf("failed to get all VPS's: %s", err))
-		}
-		for _, vps := range all {
-			if vps.Description == name {
-				d.SetId(vps.Name)
-				log.Printf("[DEBUG] terraform-provider-transip id found for VPS %s:%s \n", name, d.Id())
-			}
-		}
-		if d.Id() == "" {
-			return resource.RetryableError(fmt.Errorf("Failed to set ID for VPS %s", d.Id()))
-		}
-		return resource.NonRetryableError(resourceVpsRead(d, m))
-	})
 }

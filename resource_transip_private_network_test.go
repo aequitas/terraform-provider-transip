@@ -12,11 +12,15 @@ import (
 )
 
 func TestAccTransipResourcePrivateNetwork(t *testing.T) {
+	privateNetworkName := os.Getenv("TF_VAR_private_network_name")
+	if privateNetworkName == "" {
+		t.Skip("TF_VAR_private_network_name not provided, skipping")
+	}
 	testConfig := fmt.Sprintf(`
 	resource "transip_private_network" "test" {
     	description = "%s"
 	}
-	`, os.Getenv("TF_VAR_private_network_name"))
+	`, privateNetworkName)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -26,9 +30,9 @@ func TestAccTransipResourcePrivateNetwork(t *testing.T) {
 				Config:        testConfig,
 				ResourceName:  "transip_private_network.test",
 				ImportState:   true,
-				ImportStateId: os.Getenv("TF_VAR_private_network_name"),
+				ImportStateId: privateNetworkName,
 				ImportStateCheck: func(s []*terraform.InstanceState) error {
-					if s[0].ID != os.Getenv("TF_VAR_private_network_name") {
+					if s[0].ID != privateNetworkName {
 						return fmt.Errorf("import failed")
 					}
 					return nil

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -47,15 +46,12 @@ func resourcePrivateNetworkAttachmentCreate(d *schema.ResourceData, m interface{
 	repository := vps.PrivateNetworkRepository{Client: client}
 
 	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		log.Printf("[DEBUG] terraform-provider-transip trying to attach network %s to vps %s \n", privateNetworkID, vpsID)
 
 		err := repository.AttachVps(vpsID, privateNetworkID)
 		if err != nil {
 			if strings.Contains(err.Error(), fmt.Sprintf("VPS '%s' has an action running, no modification is allowed", vpsID)) {
-				log.Printf("[DEBUG] terraform-provider-transip VPS %s busy, retrying to attach to %s in a bit \n", vpsID, privateNetworkID)
 				return resource.RetryableError(fmt.Errorf("failed to attach VPS %s to private network %s, VPS busy: %s", vpsID, privateNetworkID, err))
 			}
-			log.Printf("[DEBUG] terraform-provider-transip something went wrong while attaching VPS %s to %s \n", vpsID, privateNetworkID)
 			return resource.NonRetryableError(fmt.Errorf("failed to attach private network %s to VPS %s: %s", privateNetworkID, vpsID, err))
 		}
 		return resource.NonRetryableError(resourcePrivateNetworkAttachmentRead(d, m))
@@ -76,14 +72,12 @@ func resourcePrivateNetworkAttachmentRead(d *schema.ResourceData, m interface{})
 	found := false
 	for _, vpsName := range p.VpsNames {
 		if vpsName == vpsID {
-			log.Printf("[DEBUG] terraform-provider-transip success: vps %s is the same as %s in private network %s \n", vpsID, vpsName, privateNetworkID)
 			found = true
 			break
 		}
-		if !found {
-			d.SetId("")
-			log.Printf("[DEBUG] terraform-provider-transip vps %s not found in private network %s \n", vpsID, privateNetworkID)
-		}
+	}
+	if !found {
+		d.SetId("")
 	}
 	d.SetId(p.Name)
 	return nil

@@ -41,6 +41,6 @@ func testAccPreCheck(t *testing.T) {
 	}
 
 	if v := os.Getenv("TF_VAR_private_network_name"); v == "" {
-		t.Fatal("TF_VAR_private_network_name must be set for acceptance tests")
+		t.Skip("TF_VAR_private_network_name not provided, skipping test.")
 	}
 }

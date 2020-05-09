@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -15,7 +14,7 @@ func resourcePrivateNetwork() *schema.Resource {
 	return &schema.Resource{
 		Create: resourcePrivateNetworkCreate,
 		Read:   resourcePrivateNetworkRead,
-		// Update: resourcePrivateNetworkUpdate,
+		Update: resourcePrivateNetworkUpdate,
 		Delete: resourcePrivateNetworkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -24,7 +23,6 @@ func resourcePrivateNetwork() *schema.Resource {
 			"description": {
 				Required: true,
 				Type:     schema.TypeString,
-				ForceNew: true,
 			},
 			"name": {
 				Computed: true,
@@ -59,9 +57,24 @@ func resourcePrivateNetworkCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("failed to order private network %s: %s", description, err)
 
 	}
-	setPrivateNetworkID(d, m)
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 
-	return resourcePrivateNetworkRead(d, m)
+		// The set description in the Terraform resource is not the same as the name used to query details about a private network.
+		// You'll need the unique name Transip generates to get the private network details.
+		all, err := repository.GetAll()
+		if err != nil {
+			return resource.NonRetryableError(fmt.Errorf("failed to get all private networks: %s", err))
+		}
+		for _, privateNetwork := range all {
+			if privateNetwork.Description == description {
+				d.SetId(privateNetwork.Name)
+			}
+		}
+		if d.Id() == "" {
+			return resource.RetryableError(fmt.Errorf("Failed to set ID for private network %s", description))
+		}
+		return resource.NonRetryableError(resourcePrivateNetworkRead(d, m))
+	})
 }
 
 func resourcePrivateNetworkRead(d *schema.ResourceData, m interface{}) error {
@@ -100,29 +113,23 @@ func resourcePrivateNetworkDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func setPrivateNetworkID(d *schema.ResourceData, m interface{}) error {
+func resourcePrivateNetworkUpdate(d *schema.ResourceData, m interface{}) error {
 	description := d.Get("description").(string)
 	client := m.(repository.Client)
 	repository := vps.PrivateNetworkRepository{Client: client}
 
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		log.Printf("[DEBUG] terraform-provider-transip trying to get id for private network %s \n", description)
+	privateNetwork := vps.PrivateNetwork{
+		Name:        d.Id(),
+		Description: description,
+		IsBlocked:   d.Get("is_blocked").(bool),
+		IsLocked:    d.Get("is_locked").(bool),
+		VpsNames:    d.Get("vps_names").([]string),
+	}
 
-		// The set description in the Terraform resource is not the same as the name used to query details about a private network.
-		// You'll need the unique name Transip generates to get the private network details.
-		all, err := repository.GetAll()
-		if err != nil {
-			return resource.NonRetryableError(fmt.Errorf("failed to get all private networks: %s", err))
-		}
-		for _, privateNetwork := range all {
-			if privateNetwork.Description == description {
-				d.SetId(privateNetwork.Name)
-				log.Printf("[DEBUG] terraform-provider-transip id found for private network %s:%s \n", description, d.Id())
-			}
-		}
-		if d.Id() == "" {
-			return resource.RetryableError(fmt.Errorf("Failed to set ID for private network %s", description))
-		}
-		return resource.NonRetryableError(resourcePrivateNetworkRead(d, m))
-	})
+	err := repository.Update(privateNetwork)
+
+	if err != nil {
+		return fmt.Errorf("failed to update private network %s with id %q: %s", description, d.Id(), err)
+	}
+	return resourcePrivateNetworkRead(d, m)
 }

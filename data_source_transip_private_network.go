@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/transip/gotransip/v6/repository"
@@ -51,10 +50,8 @@ func dataSourcePrivateNetworkRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("failed to lookup private network %q: %s", name, err)
 	}
 
-	log.Printf("[DEBUG] terraform-provider-transip success: private network %s found, getting details.\n", name)
 	var vpsNames []string
 	for _, vpsName := range p.VpsNames {
-		log.Printf("[DEBUG] terraform-provider-transip success: private network %s has vps %s \n", name, vpsName)
 		vpsNames = append(vpsNames, vpsName)
 	}
 
@@ -62,7 +59,6 @@ func dataSourcePrivateNetworkRead(d *schema.ResourceData, m interface{}) error {
 
 	d.Set("name", name)
 	d.Set("description", p.Description)
-	log.Printf("[DEBUG] terraform-provider-transip success: private network %s has description %s \n", name, p.Description)
 	d.Set("is_blocked", p.IsBlocked)
 	d.Set("is_locked", p.IsLocked)
 	d.Set("vps_names", vpsNames)
