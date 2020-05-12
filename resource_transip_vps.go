@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
+	"log"
+
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/product"
@@ -168,11 +171,28 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 
 	}
 
-	d.SetId(name)
-
 	d.Set("install_text", InstallText)
 
-	return resourceVpsRead(d, m)
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		log.Printf("[DEBUG] terraform-provider-transip trying to get id for VPS %s \n", name)
+
+		// The set name in the Terraform resource is not the same as the name used to query details about a VPS.
+		// You'll need the unique name Transip generates to get the VPS details.
+		all, err := repository.GetAll()
+		if err != nil {
+			return resource.NonRetryableError(fmt.Errorf("failed to get all VPS's: %s", err))
+		}
+		for _, vps := range all {
+			if vps.Description == name {
+				d.SetId(vps.Name)
+				log.Printf("[DEBUG] terraform-provider-transip id found for VPS %s:%s \n", name, d.Id())
+			}
+		}
+		if d.Id() == "" {
+			return resource.RetryableError(fmt.Errorf("Failed to set ID for VPS %s", d.Id()))
+		}
+		return resource.NonRetryableError(resourceVpsRead(d, m))
+	})
 }
 
 func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
@@ -180,12 +200,13 @@ func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
 
 	client := m.(repository.Client)
 	repository := vps.Repository{Client: client}
-	v, err := repository.GetByName(name)
+
+	v, err := repository.GetByName(d.Id())
 	if err != nil {
 		return fmt.Errorf("failed to lookup vps %q: %s", name, err)
 	}
 
-	ipAddresses, err := repository.GetIPAddresses(name)
+	ipAddresses, err := repository.GetIPAddresses(d.Id())
 	if err != nil {
 		return fmt.Errorf("failed to lookup vps %q: %s", name, err)
 	}
@@ -200,9 +221,8 @@ func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	d.SetId(name)
-
 	d.Set("name", name)
+	// Description returned by TransIP API == user defined name.
 	d.Set("description", v.Description)
 	d.Set("product_name", v.ProductName)
 	d.Set("operating_system", v.OperatingSystem)
