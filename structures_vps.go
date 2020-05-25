@@ -7,21 +7,19 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
-
 	"github.com/transip/gotransip/v6/ipaddress"
 	"github.com/transip/gotransip/v6/vps"
 )
 
 // Transfrom the terraform rules to the API rules (FirewallRule)
-func vpsFirewallRulesExpand(inboundRules *schema.Set) ([]vps.FirewallRule, error) {
-	rules := make([]vps.FirewallRule, 0)
-	for _, rule := range inboundRules.List() {
+func vpsFirewallRulesExpand(stateRules []interface{}) ([]vps.FirewallRule, error) {
+	rules := make([]vps.FirewallRule, len(stateRules))
+	for i, rule := range stateRules {
 		r, err := vpsFirewallRuleExpand(rule)
 		if err != nil {
 			return nil, err
 		}
-		rules = append(rules, *r)
+		rules[i] = *r
 	}
 
 	return rules, nil
@@ -65,11 +63,24 @@ func vpsFirewallRuleExpand(i interface{}) (*vps.FirewallRule, error) {
 		Description: rawRule["description"].(string),
 		StartPort:   startPort,
 		EndPort:     endPort,
-		Protocol:    "tcp",
+		Protocol:    rawRule["protocol"].(string),
 		Whitelist:   ipAdresses,
 	}
 
 	return rule, nil
+}
+
+// Transform the API rule (FirewallRule) to terraform rule
+func vpsFirewallRulesFlatten(rules []vps.FirewallRule) []interface{} {
+
+	// Flatten each rule
+	stateRules := make([]interface{}, len(rules))
+	for i, rule := range rules {
+		stateRules[i] = vpsFirewallRuleFlatten(&rule)
+	}
+
+	// Return the set
+	return stateRules
 }
 
 // Transform the API rule (FirewallRule) to terraform rule
@@ -84,7 +95,7 @@ func vpsFirewallRuleFlatten(rule *vps.FirewallRule) map[string]interface{} {
 	}
 
 	// Parse the IP addresses
-	ipAdresses := make([]string, len(rule.Whitelist))
+	ipAdresses := make([]interface{}, len(rule.Whitelist))
 	for i, ip := range rule.Whitelist {
 
 		ipAdresses[i] = ip.IPNet.String()

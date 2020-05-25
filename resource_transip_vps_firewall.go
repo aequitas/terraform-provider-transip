@@ -88,9 +88,9 @@ func vpsFirewallRuleSchema() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.CIDRNetwork(0, 32),
+					ValidateFunc: validation.CIDRNetwork(0, 128),
 				},
-				Description: "Whitelisted IP’s or ranges that are allowed to connect, empty to allow all",
+				Description: "Whitelisted IP's or ranges that are allowed to connect, empty to allow all",
 			},
 		},
 	}
@@ -109,15 +109,9 @@ func resourceVpsFirewallRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("failed to lookup vps firewall %q: %s", name, err)
 	}
 
-	// Convert all inbound API rules to state rules
-	inboundRules := make([]interface{}, len(firewall.RuleSet))
-	for i, rule := range firewall.RuleSet {
-		inboundRules[i] = vpsFirewallRuleFlatten(&rule)
-	}
-
-	// Check if we have no firewall
-	log.Printf("[DEBUG] terraform-provider-transip VPS firewall %s (enabled: %t) has %d inbound rules\n", name, firewall.IsEnabled, len(inboundRules))
-	if len(inboundRules) == 0 && !firewall.IsEnabled {
+	// Check if we a firewall exist
+	log.Printf("[DEBUG] terraform-provider-transip VPS firewall %s (enabled: %t) has %d inbound rules\n", name, firewall.IsEnabled, len(firewall.RuleSet))
+	if len(firewall.RuleSet) == 0 && !firewall.IsEnabled {
 		d.SetId("")
 		return nil
 	}
@@ -126,7 +120,7 @@ func resourceVpsFirewallRead(d *schema.ResourceData, m interface{}) error {
 	d.SetId(name)
 	d.Set("name", name)
 	d.Set("is_enabled", firewall.IsEnabled)
-	d.Set("inbound_rule", inboundRules)
+	d.Set("inbound_rule", vpsFirewallRulesFlatten(firewall.RuleSet))
 
 	return nil
 }
@@ -138,7 +132,7 @@ func resourceVpsFirewallCreate(d *schema.ResourceData, m interface{}) error {
 	// Create the API firewall
 	var firewall vps.Firewall
 	firewall.IsEnabled = d.Get("is_enabled").(bool)
-	firewall.RuleSet, _ = vpsFirewallRulesExpand(inboundRules)
+	firewall.RuleSet, _ = vpsFirewallRulesExpand(inboundRules.List())
 
 	// Set the firewall for the VPS
 	client := m.(repository.Client)

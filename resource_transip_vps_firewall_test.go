@@ -83,18 +83,27 @@ func testAccTransipResourceVpsFirewall(name string) string {
 	    description = "HTTP"
 	    port        = "80"
 	    protocol    = "tcp"
+	    whitelist   = [
+	        "192.168.0.2/32",
+	        "::/128",
+	        "127.0.0.2/32",
+	        "127.0.0.1/32",
+	        "192.168.0.1/32",
+	    ]
 	  }
 
 	  inbound_rule {
 	    description = "HTTPS"
 	    port        = 443
 	    protocol    = "tcp"
+
 	  }
 
 	  inbound_rule {
 	    description = "SSH"
 	    port        = 22
 	    protocol    = "tcp"
+	    whitelist   = []
 	  }
 
 	  inbound_rule {
