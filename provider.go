@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/authenticator"
 )
@@ -68,8 +68,8 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"transip_domain": dataSourceDomain(),
-			"transip_vps":    dataSourceVps(),
+			"transip_domain":          dataSourceDomain(),
+			"transip_vps":             dataSourceVps(),
 			"transip_private_network": dataSourcePrivateNetwork(),
 		},
 	}
