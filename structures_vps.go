@@ -7,9 +7,25 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform/helper/schema"
+
 	"github.com/transip/gotransip/v6/ipaddress"
 	"github.com/transip/gotransip/v6/vps"
 )
+
+// Transfrom the terraform rules to the API rules (FirewallRule)
+func vpsFirewallRulesExpand(inboundRules *schema.Set) ([]vps.FirewallRule, error) {
+	rules := make([]vps.FirewallRule, 0)
+	for _, rule := range inboundRules.List() {
+		r, err := vpsFirewallRuleExpand(rule)
+		if err != nil {
+			return nil, err
+		}
+		rules = append(rules, *r)
+	}
+
+	return rules, nil
+}
 
 // Transfrom the terraform rule to the API rule (FirewallRule)
 func vpsFirewallRuleExpand(i interface{}) (*vps.FirewallRule, error) {

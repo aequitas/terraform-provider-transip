@@ -7,11 +7,74 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+
+	"github.com/transip/gotransip/v6/repository"
+	"github.com/transip/gotransip/v6/vps"
 )
 
 func TestAccTransipResourceVpsFirewall(t *testing.T) {
 	vpsName := os.Getenv("TF_VAR_vps_name")
-	testConfig := fmt.Sprintf(`
+	if vpsName == "" {
+		t.Skip("TF_VAR_vps_name not provided, skipping")
+	}
+
+	var firewall vps.Firewall
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccTransipResourceVpsFirewall(vpsName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTransipResourceVpsFirewallExists("transip_vps_firewall.test", &firewall),
+					testAccCheckVpsFirewallAttributes(&firewall),
+					resource.TestCheckResourceAttr("transip_vps_firewall.test", "is_enabled", "true"),
+					resource.TestCheckResourceAttr("transip_vps_firewall.test", "name", vpsName),
+					resource.TestCheckResourceAttr("transip_vps_firewall.test", "inbound_rule.#", "6"),
+				),
+			},
+		},
+	})
+}
+
+// Check if all remote attributes match up
+func testAccCheckVpsFirewallAttributes(firewall *vps.Firewall) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if len(firewall.RuleSet) != 6 {
+			return fmt.Errorf("firewall does not contain 6 inbound rules")
+		}
+
+		return nil
+	}
+}
+
+// Query the API to verify remote resource exist
+func testAccCheckTransipResourceVpsFirewallExists(n string, firewall *vps.Firewall) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		// find the corresponding state object
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		// retrieve the configured client from the test setup
+		client := testAccProvider.Meta().(repository.Client)
+		repository := vps.FirewallRepository{Client: client}
+		v, err := repository.GetFirewall(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("failed to obtain vps firewall %q: %s", rs.Primary.ID, err)
+		}
+
+		// If no error, assign the response
+		*firewall = v
+		return nil
+	}
+}
+
+// returns an configuration for a firewall given a specific vps (name)
+func testAccTransipResourceVpsFirewall(name string) string {
+	return fmt.Sprintf(`
 
 	resource "transip_vps_firewall" "test" {
 	  name = "%s"
@@ -25,13 +88,13 @@ func TestAccTransipResourceVpsFirewall(t *testing.T) {
 	  inbound_rule {
 	    description = "HTTPS"
 	    port        = 443
-	    protocol    = "udp"
+	    protocol    = "tcp"
 	  }
 
 	  inbound_rule {
 	    description = "SSH"
 	    port        = 22
-	    protocol    = "tcp_udp"
+	    protocol    = "tcp"
 	  }
 
 	  inbound_rule {
@@ -39,25 +102,18 @@ func TestAccTransipResourceVpsFirewall(t *testing.T) {
 	    port        = "90-100"
 	    protocol    = "tcp"
 	  }
-	}
-	`, vpsName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:        testConfig,
-				ResourceName:  "transip_vps_firewall.test",
-				ImportState:   true,
-				ImportStateId: vpsName,
-				ImportStateCheck: func(s []*terraform.InstanceState) error {
-					if s[0].ID != vpsName {
-						return fmt.Errorf("import failed")
-					}
-					return nil
-				},
-			},
-		},
-	})
+	  inbound_rule {
+	    description = "UDP"
+	    port        = "200"
+	    protocol    = "udp"
+	  }
+
+	  inbound_rule {
+	    description = "Both"
+	    port        = "300"
+	    protocol    = "tcp_udp"
+	  }
+	}
+	`, name)
 }
