@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"os"
-	"regexp"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccTransipResourceDomain(t *testing.T) {
@@ -31,7 +31,7 @@ func TestAccTransipResourceDomain(t *testing.T) {
 			{
 				Config: testConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("transip_dns_record.test1", "content.0", "@"),
+					resource.TestCheckResourceAttr("transip_dns_record.test1", "content.#", "1"),
 				),
 			},
 		},
@@ -60,7 +60,7 @@ func TestAccTransipResourceDomainMultiple(t *testing.T) {
 			{
 				Config: testConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("transip_dns_record.test2", "content.0", regexp.MustCompile("192.0.2.[0-3]")),
+					resource.TestCheckResourceAttr("transip_dns_record.test2", "content.#", "4"),
 				),
 			},
 		},
@@ -105,25 +105,20 @@ func TestAccTransipResourceDomainUpdate(t *testing.T) {
 			{
 				Config: testConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("transip_dns_record.test7", "content.0", regexp.MustCompile("192.0.2.[01]")),
-					resource.TestMatchResourceAttr("transip_dns_record.test7", "content.1", regexp.MustCompile("192.0.2.[01]")),
+					resource.TestCheckResourceAttr("transip_dns_record.test7", "content.#", "2"),
 				),
 			},
 			{
 				Config: testConfig2,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("transip_dns_record.test7", "content.0", regexp.MustCompile("192.0.2.[23]")),
-					resource.TestMatchResourceAttr("transip_dns_record.test7", "content.1", regexp.MustCompile("192.0.2.[23]")),
+					resource.TestCheckResourceAttr("transip_dns_record.test7", "content.#", "2"),
 				),
 			},
 		},
 	})
 }
 
-// TODO: concurrency seems broken on the Transip side, needs more testing to prove
 func TestAccTransipResourceDomainConcurrent(t *testing.T) {
-	t.Skip("concurrency is currently broken, skipping")
-
 	timestamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
   terraform { required_version = ">= 0.12.0" }
@@ -154,18 +149,15 @@ func TestAccTransipResourceDomainConcurrent(t *testing.T) {
 			{
 				Config: testConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("transip_dns_record.test3", "content.0", "@"),
-					resource.TestCheckResourceAttr("transip_dns_record.test4", "content.0", "@"),
+					resource.TestCheckResourceAttr("transip_dns_record.test3", "content.#", "1"),
+					resource.TestCheckResourceAttr("transip_dns_record.test4", "content.#", "1"),
 				),
 			},
 		},
 	})
 }
 
-// TODO: concurrency seems broken on the Transip side, needs more testing to prove
 func TestAccTransipResourceDomainConcurrentMultiple(t *testing.T) {
-	t.Skip("concurrency is currently broken, skipping")
-
 	timestamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
   terraform { required_version = ">= 0.12.0" }
@@ -196,8 +188,8 @@ func TestAccTransipResourceDomainConcurrentMultiple(t *testing.T) {
 			{
 				Config: testConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("transip_dns_record.test5", "content.0", regexp.MustCompile("192.0.2.[01]")),
-					resource.TestMatchResourceAttr("transip_dns_record.test6", "content.0", regexp.MustCompile("192.0.2.[23]")),
+					resource.TestCheckResourceAttr("transip_dns_record.test5", "content.#", "2"),
+					resource.TestCheckResourceAttr("transip_dns_record.test6", "content.#", "2"),
 				),
 			},
 		},

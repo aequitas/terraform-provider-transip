@@ -148,6 +148,11 @@ func resourceDNSRecordRead(d *schema.ResourceData, m interface{}) error {
 			return retryableErrorf(err, "failed to read DNS record entries for domain %s", domainName)
 		}
 
+		if len(dnsEntries) == 0 {
+			d.SetId("")
+			return nil
+		}
+
 		var content []string
 		var expire int
 		for _, e := range dnsEntries {
@@ -156,10 +161,8 @@ func resourceDNSRecordRead(d *schema.ResourceData, m interface{}) error {
 				content = append(content, e.Content)
 			}
 		}
-		if len(content) == 0 {
-			d.SetId("")
-			return nil
-		}
+
+		log.Printf("[DEBUG] terraform-provider-transip reading record %s, %d, %s, %v\n", entryName, expire, entryType, content)
 
 		d.Set("name", entryName)
 		d.Set("expire", expire)
@@ -230,7 +233,7 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDNSRecordDelete(d *schema.ResourceData, m interface{}) error {
-	d.Set("content", schema.NewSet(schema.HashString, make([]interface{}, 0)))
+	d.Set("content", make([]interface{}, 0))
 
 	return resourceDNSRecordUpdate(d, m)
 }
