@@ -6,10 +6,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/mutexkv"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/authenticator"
 )
+
+var dnsDomainMutexKV = mutexkv.NewMutexKV()
 
 func envBoolFunc(k string) schema.SchemaDefaultFunc {
 	return func() (interface{}, error) {
