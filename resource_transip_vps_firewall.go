@@ -2,13 +2,28 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"strings"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 
 	"github.com/transip/gotransip/v6/repository"
 	"github.com/transip/gotransip/v6/vps"
 )
+
+func retryableErrorf(err error, format string, a ...interface{}) *resource.RetryError {
+	// Format the error
+	e := fmt.Errorf(format+": %s", append(a, err)...)
+
+	// Return the retryable error (retry or not)
+	if strings.Contains(err.Error(), "has an action running, no modification is allowed") {
+		return resource.RetryableError(e)
+	} else {
+		return resource.NonRetryableError(e)
+	}
+}
 
 func resourceVpsFirewall() *schema.Resource {
 	return &schema.Resource{
@@ -35,8 +50,8 @@ func resourceVpsFirewall() *schema.Resource {
 			},
 			"inbound_rule": {
 				Type:        schema.TypeSet,
-				Optional:    true,
 				ForceNew:    true,
+				Optional:    true,
 				Description: "Ruleset of the VPS",
 				Elem:        vpsFirewallRuleSchema(),
 			},
@@ -49,8 +64,8 @@ func vpsFirewallRuleSchema() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"description": {
 				Type:        schema.TypeString,
-				Required:    true,
 				ForceNew:    true,
+				Required:    true,
 				Description: "Description of the rule",
 			},
 			"protocol": {
@@ -87,21 +102,30 @@ func resourceVpsFirewallRead(d *schema.ResourceData, m interface{}) error {
 	// Obtain the firewall for the VPS
 	client := m.(repository.Client)
 	repository := vps.FirewallRepository{Client: client}
-	v, err := repository.GetFirewall(name)
+
+	log.Printf("[DEBUG] terraform-provider-transip reading VPS firewall %s\n", name)
+	firewall, err := repository.GetFirewall(name)
 	if err != nil {
 		return fmt.Errorf("failed to lookup vps firewall %q: %s", name, err)
 	}
 
 	// Convert all inbound API rules to state rules
-	inboundRules := make([]interface{}, len(v.RuleSet))
-	for i, rule := range v.RuleSet {
+	inboundRules := make([]interface{}, len(firewall.RuleSet))
+	for i, rule := range firewall.RuleSet {
 		inboundRules[i] = vpsFirewallRuleFlatten(&rule)
+	}
+
+	// Check if we have no firewall
+	log.Printf("[DEBUG] terraform-provider-transip VPS firewall %s (enabled: %t) has %d inbound rules\n", name, firewall.IsEnabled, len(inboundRules))
+	if len(inboundRules) == 0 && !firewall.IsEnabled {
+		d.SetId("")
+		return nil
 	}
 
 	// Load information
 	d.SetId(name)
 	d.Set("name", name)
-	d.Set("is_enabled", v.IsEnabled)
+	d.Set("is_enabled", firewall.IsEnabled)
 	d.Set("inbound_rule", inboundRules)
 
 	return nil
@@ -109,32 +133,28 @@ func resourceVpsFirewallRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceVpsFirewallCreate(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("name").(string)
+	inboundRules := d.Get("inbound_rule").(*schema.Set)
 
 	// Create the API firewall
 	var firewall vps.Firewall
 	firewall.IsEnabled = d.Get("is_enabled").(bool)
-
-	// Convert all inbound state rules to API rules
-	inboundRules := d.Get("inbound_rule").(*schema.Set)
-	for _, rule := range inboundRules.List() {
-		r, err := vpsFirewallRuleExpand(rule)
-		if err != nil {
-			return err
-		}
-		firewall.RuleSet = append(firewall.RuleSet, *r)
-	}
+	firewall.RuleSet, _ = vpsFirewallRulesExpand(inboundRules)
 
 	// Set the firewall for the VPS
 	client := m.(repository.Client)
 	repository := vps.FirewallRepository{Client: client}
-	err := repository.UpdateFirewall(name, firewall)
-	if err != nil {
-		return fmt.Errorf("failed to update vps firewall %q: %s", name, err)
-	}
 
-	d.SetId(name)
+	// Try the update
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		log.Printf("[DEBUG] terraform-provider-transip updating VPS firewall %s (%v)\n", name, firewall.RuleSet)
+		err := repository.UpdateFirewall(name, firewall)
+		if err != nil {
+			return retryableErrorf(err, "failed to update vps firewall %q", name)
+		}
+		d.SetId(name)
 
-	return resourceVpsFirewallRead(d, m)
+		return resource.NonRetryableError(resourceVpsFirewallRead(d, m))
+	})
 }
 
 func resourceVpsFirewallDelete(d *schema.ResourceData, m interface{}) error {
@@ -148,10 +168,14 @@ func resourceVpsFirewallDelete(d *schema.ResourceData, m interface{}) error {
 	// Set the empty firewall for the VPS
 	client := m.(repository.Client)
 	repository := vps.FirewallRepository{Client: client}
-	err := repository.UpdateFirewall(name, firewall)
-	if err != nil {
-		return fmt.Errorf("failed to delete vps firewall %q: %s", name, err)
-	}
 
-	return nil
+	// Try the delete
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		log.Printf("[DEBUG] terraform-provider-transip removing VPS firewall %s\n", name)
+		err := repository.UpdateFirewall(name, firewall)
+		if err != nil {
+			return retryableErrorf(err, "failed to delete vps firewall %q", name)
+		}
+		return nil
+	})
 }
