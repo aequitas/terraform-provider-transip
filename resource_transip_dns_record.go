@@ -20,7 +20,7 @@ var errorStrings = []string{
 	"DNS Entries are currently being saved",
 }
 
-func retryableErrorf(err error, format string, a ...interface{}) *resource.RetryError {
+func retryableDNSRecordErrorf(err error, format string, a ...interface{}) *resource.RetryError {
 	// Check if this is a retryable error
 	isRetry := false
 	for _, errorString := range errorStrings {
@@ -145,7 +145,7 @@ func resourceDNSRecordRead(d *schema.ResourceData, m interface{}) error {
 		dnsEntries, err := repository.GetDNSEntries(domainName)
 
 		if err != nil {
-			return retryableErrorf(err, "failed to read DNS record entries for domain %s", domainName)
+			return retryableDNSRecordErrorf(err, "failed to read DNS record entries for domain %s", domainName)
 		}
 
 		if len(dnsEntries) == 0 {
@@ -193,7 +193,7 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 		log.Printf("[DEBUG] terraform-provider-transip update %s\n", entryName)
 		dnsEntries, err := repository.GetDNSEntries(domainName)
 		if err != nil {
-			return retryableErrorf(err, "failed to get existing DNS record entries for domain %s", domainName)
+			return retryableDNSRecordErrorf(err, "failed to get existing DNS record entries for domain %s", domainName)
 		}
 
 		// go through all dns entries in the zone (there is no way to read a single entry name)
@@ -207,7 +207,7 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 			log.Printf("[DEBUG] terraform-provider-transip %s removing %v\n", entryName, existingEntry)
 			err := repository.RemoveDNSEntry(domainName, existingEntry)
 			if err != nil {
-				return retryableErrorf(err, "failed to remove DNS record entry for domain %s (%v)", domainName, existingEntry)
+				return retryableDNSRecordErrorf(err, "failed to remove DNS record entry for domain %s (%v)", domainName, existingEntry)
 			}
 		}
 
@@ -224,7 +224,7 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 			err := repository.AddDNSEntry(domainName, dnsEntry)
 
 			if err != nil {
-				return retryableErrorf(err, "failed to add DNS record entry for domain %s (%v)", domainName, dnsEntry)
+				return retryableDNSRecordErrorf(err, "failed to add DNS record entry for domain %s (%v)", domainName, dnsEntry)
 			}
 		}
 
