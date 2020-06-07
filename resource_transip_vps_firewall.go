@@ -13,7 +13,7 @@ import (
 	"github.com/transip/gotransip/v6/vps"
 )
 
-func retryableErrorf(err error, format string, a ...interface{}) *resource.RetryError {
+func retryableVpsFirewallErrorf(err error, format string, a ...interface{}) *resource.RetryError {
 	// Format the error
 	e := fmt.Errorf(format+": %s", append(a, err)...)
 
@@ -143,7 +143,7 @@ func resourceVpsFirewallCreate(d *schema.ResourceData, m interface{}) error {
 		log.Printf("[DEBUG] terraform-provider-transip updating VPS firewall %s (%v)\n", name, firewall.RuleSet)
 		err := repository.UpdateFirewall(name, firewall)
 		if err != nil {
-			return retryableErrorf(err, "failed to update vps firewall %q", name)
+			return retryableVpsFirewallErrorf(err, "failed to update vps firewall %q", name)
 		}
 		d.SetId(name)
 
@@ -168,7 +168,7 @@ func resourceVpsFirewallDelete(d *schema.ResourceData, m interface{}) error {
 		log.Printf("[DEBUG] terraform-provider-transip removing VPS firewall %s\n", name)
 		err := repository.UpdateFirewall(name, firewall)
 		if err != nil {
-			return retryableErrorf(err, "failed to delete vps firewall %q", name)
+			return retryableVpsFirewallErrorf(err, "failed to delete vps firewall %q", name)
 		}
 		return nil
 	})
