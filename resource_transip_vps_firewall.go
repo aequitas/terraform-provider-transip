@@ -35,11 +35,11 @@ func resourceVpsFirewall() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"vps_name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The name of the vps",
+				Description: "Name of the VPS",
 			},
 			"is_enabled": {
 				Type:        schema.TypeBool,
@@ -52,7 +52,7 @@ func resourceVpsFirewall() *schema.Resource {
 				Type:        schema.TypeSet,
 				ForceNew:    true,
 				Optional:    true,
-				Description: "Ruleset of the VPS",
+				Description: "Firewall rules",
 				Elem:        vpsFirewallRuleSchema(),
 			},
 		},
@@ -97,28 +97,28 @@ func vpsFirewallRuleSchema() *schema.Resource {
 }
 
 func resourceVpsFirewallRead(d *schema.ResourceData, m interface{}) error {
-	name := d.Id()
+	vpsName := d.Id()
 
 	// Obtain the firewall for the VPS
 	client := m.(repository.Client)
 	repository := vps.FirewallRepository{Client: client}
 
-	log.Printf("[DEBUG] terraform-provider-transip reading VPS firewall %s\n", name)
-	firewall, err := repository.GetFirewall(name)
+	log.Printf("[DEBUG] terraform-provider-transip reading firewall for VPS %s\n", vpsName)
+	firewall, err := repository.GetFirewall(vpsName)
 	if err != nil {
-		return fmt.Errorf("failed to lookup vps firewall %q: %s", name, err)
+		return fmt.Errorf("failed to lookup vps firewall %q: %s", vpsName, err)
 	}
 
 	// Check if we a firewall exist
-	log.Printf("[DEBUG] terraform-provider-transip VPS firewall %s (enabled: %t) has %d inbound rules\n", name, firewall.IsEnabled, len(firewall.RuleSet))
+	log.Printf("[DEBUG] terraform-provider-transip firewall for VPS %s (enabled: %t) has %d inbound rules\n", vpsName, firewall.IsEnabled, len(firewall.RuleSet))
 	if len(firewall.RuleSet) == 0 && !firewall.IsEnabled {
 		d.SetId("")
 		return nil
 	}
 
 	// Load information
-	d.SetId(name)
-	d.Set("name", name)
+	d.SetId(vpsName)
+	d.Set("vps_name", vpsName)
 	d.Set("is_enabled", firewall.IsEnabled)
 	d.Set("inbound_rule", vpsFirewallRulesFlatten(firewall.RuleSet))
 
@@ -126,7 +126,7 @@ func resourceVpsFirewallRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceVpsFirewallCreate(d *schema.ResourceData, m interface{}) error {
-	name := d.Get("name").(string)
+	vpsName := d.Get("vps_name").(string)
 	inboundRules := d.Get("inbound_rule").(*schema.Set)
 
 	// Create the API firewall
@@ -140,19 +140,19 @@ func resourceVpsFirewallCreate(d *schema.ResourceData, m interface{}) error {
 
 	// Try the update
 	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		log.Printf("[DEBUG] terraform-provider-transip updating VPS firewall %s (%v)\n", name, firewall.RuleSet)
-		err := repository.UpdateFirewall(name, firewall)
+		log.Printf("[DEBUG] terraform-provider-transip updating firewall for VPS %s (%v)\n", vpsName, firewall.RuleSet)
+		err := repository.UpdateFirewall(vpsName, firewall)
 		if err != nil {
-			return retryableVpsFirewallErrorf(err, "failed to update vps firewall %q", name)
+			return retryableVpsFirewallErrorf(err, "failed to update firewall for VPS %q", vpsName)
 		}
-		d.SetId(name)
+		d.SetId(vpsName)
 
 		return resource.NonRetryableError(resourceVpsFirewallRead(d, m))
 	})
 }
 
 func resourceVpsFirewallDelete(d *schema.ResourceData, m interface{}) error {
-	name := d.Id()
+	vpsName := d.Id()
 
 	// Create an empty firewall which is also disabled
 	var firewall vps.Firewall
@@ -165,10 +165,10 @@ func resourceVpsFirewallDelete(d *schema.ResourceData, m interface{}) error {
 
 	// Try the delete
 	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		log.Printf("[DEBUG] terraform-provider-transip removing VPS firewall %s\n", name)
-		err := repository.UpdateFirewall(name, firewall)
+		log.Printf("[DEBUG] terraform-provider-transip removing firewall for VPS %s\n", vpsName)
+		err := repository.UpdateFirewall(vpsName, firewall)
 		if err != nil {
-			return retryableVpsFirewallErrorf(err, "failed to delete vps firewall %q", name)
+			return retryableVpsFirewallErrorf(err, "failed to delete firewall for VPS %q", vpsName)
 		}
 		return nil
 	})

@@ -30,7 +30,7 @@ func TestAccTransipResourceVpsFirewall(t *testing.T) {
 					testAccCheckTransipResourceVpsFirewallExists("transip_vps_firewall.test", &firewall),
 					testAccCheckVpsFirewallAttributes(&firewall),
 					resource.TestCheckResourceAttr("transip_vps_firewall.test", "is_enabled", "true"),
-					resource.TestCheckResourceAttr("transip_vps_firewall.test", "name", vpsName),
+					resource.TestCheckResourceAttr("transip_vps_firewall.test", "vps_name", vpsName),
 					resource.TestCheckResourceAttr("transip_vps_firewall.test", "inbound_rule.#", "6"),
 				),
 			},
@@ -73,11 +73,11 @@ func testAccCheckTransipResourceVpsFirewallExists(n string, firewall *vps.Firewa
 }
 
 // returns an configuration for a firewall given a specific vps (name)
-func testAccTransipResourceVpsFirewall(name string) string {
+func testAccTransipResourceVpsFirewall(vpsName string) string {
 	return fmt.Sprintf(`
 
 	resource "transip_vps_firewall" "test" {
-	  name = "%s"
+	  vps_name = "%s"
 
 	  inbound_rule {
 	    description = "HTTP"
@@ -124,5 +124,5 @@ func testAccTransipResourceVpsFirewall(name string) string {
 	    protocol    = "tcp_udp"
 	  }
 	}
-	`, name)
+	`, vpsName)
 }
