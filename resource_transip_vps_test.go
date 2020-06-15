@@ -15,6 +15,7 @@ func TestAccTransipResourceVpsImport(t *testing.T) {
 	if vpsName == "" {
 		t.Skip("TF_VAR_vps_name not provided, skipping")
 	}
+
 	testConfig := fmt.Sprintf(`
 	resource "transip_vps" "test" {
 		name             = "%s"

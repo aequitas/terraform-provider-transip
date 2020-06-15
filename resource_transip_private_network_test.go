@@ -16,6 +16,7 @@ func TestAccTransipResourcePrivateNetwork(t *testing.T) {
 	if privateNetworkName == "" {
 		t.Skip("TF_VAR_private_network_name not provided, skipping")
 	}
+
 	testConfig := fmt.Sprintf(`
 	resource "transip_private_network" "test" {
     	description = "%s"

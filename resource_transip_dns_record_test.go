@@ -10,6 +10,10 @@ import (
 )
 
 func TestAccTransipResourceDomain(t *testing.T) {
+	if v := os.Getenv("TF_VAR_domain"); v == "" {
+		t.Fatal("TF_VAR_domain must be set for acceptance tests")
+	}
+
 	timestamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
 	data "transip_domain" "test" {
@@ -39,6 +43,10 @@ func TestAccTransipResourceDomain(t *testing.T) {
 }
 
 func TestAccTransipResourceDomainMultiple(t *testing.T) {
+	if v := os.Getenv("TF_VAR_domain"); v == "" {
+		t.Fatal("TF_VAR_domain must be set for acceptance tests")
+	}
+
 	timestamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
 	data "transip_domain" "test" {
@@ -68,6 +76,10 @@ func TestAccTransipResourceDomainMultiple(t *testing.T) {
 }
 
 func TestAccTransipResourceDomainUpdate(t *testing.T) {
+	if v := os.Getenv("TF_VAR_domain"); v == "" {
+		t.Fatal("TF_VAR_domain must be set for acceptance tests")
+	}
+
 	timestamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
 	terraform { required_version = ">= 0.12.0" }
@@ -119,6 +131,10 @@ func TestAccTransipResourceDomainUpdate(t *testing.T) {
 }
 
 func TestAccTransipResourceDomainConcurrent(t *testing.T) {
+	if v := os.Getenv("TF_VAR_domain"); v == "" {
+		t.Fatal("TF_VAR_domain must be set for acceptance tests")
+	}
+
 	timestamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
   terraform { required_version = ">= 0.12.0" }
@@ -158,6 +174,11 @@ func TestAccTransipResourceDomainConcurrent(t *testing.T) {
 }
 
 func TestAccTransipResourceDomainConcurrentMultiple(t *testing.T) {
+	domain := os.Getenv("TF_VAR_domain")
+	if domain == "" {
+		t.Skip("TF_VAR_domain must be set for acceptance tests")
+	}
+
 	timestamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
   terraform { required_version = ">= 0.12.0" }
@@ -179,7 +200,7 @@ func TestAccTransipResourceDomainConcurrentMultiple(t *testing.T) {
     type    = "A"
     content =  ["192.0.2.2", "192.0.2.3"]
   }
-  `, os.Getenv("TF_VAR_domain"), timestamp, timestamp)
+  `, domain, timestamp, timestamp)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

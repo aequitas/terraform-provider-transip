@@ -15,6 +15,11 @@ func TestAccTransipResourcePrivateNetworkAttachment(t *testing.T) {
 	if privateNetworkName == "" {
 		t.Skip("TF_VAR_private_network_name not provided, skipping")
 	}
+	vpsName := os.Getenv("TF_VAR_vps_name")
+	if vpsName == "" {
+		t.Skip("TF_VAR_vps_name not provided, skipping")
+	}
+
 	testConfig := fmt.Sprintf(`
 	resource "transip_private_network_attachment" "test" {
 		private_network_id = "%s"
