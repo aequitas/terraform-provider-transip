@@ -135,6 +135,10 @@ func TestAccTransipResourceDomainConcurrent(t *testing.T) {
 		t.Fatal("TF_VAR_domain must be set for acceptance tests")
 	}
 
+	if v := os.Getenv("TF_VAR_domain"); v == "" {
+		t.Fatal("TF_VAR_domain must be set for acceptance tests")
+	}
+
 	timestamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
   terraform { required_version = ">= 0.12.0" }
@@ -174,6 +178,11 @@ func TestAccTransipResourceDomainConcurrent(t *testing.T) {
 }
 
 func TestAccTransipResourceDomainConcurrentMultiple(t *testing.T) {
+	domain := os.Getenv("TF_VAR_domain")
+	if domain == "" {
+		t.Skip("TF_VAR_domain must be set for acceptance tests")
+	}
+
 	domain := os.Getenv("TF_VAR_domain")
 	if domain == "" {
 		t.Skip("TF_VAR_domain must be set for acceptance tests")
