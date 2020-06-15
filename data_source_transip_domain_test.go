@@ -10,7 +10,7 @@ import (
 
 func TestAccTransipDataSourceDomain(t *testing.T) {
 	if v := os.Getenv("TF_VAR_domain"); v == "" {
-		t.Fatal("TF_VAR_domain must be set for acceptance tests")
+		t.Skip("TF_VAR_domain must be set for acceptance tests")
 	}
 
 	var testConfig = `data "transip_domain" "test" {name = "%s"}`

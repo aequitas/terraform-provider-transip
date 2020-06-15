@@ -11,7 +11,7 @@ import (
 
 func TestAccTransipResourceDomain(t *testing.T) {
 	if v := os.Getenv("TF_VAR_domain"); v == "" {
-		t.Fatal("TF_VAR_domain must be set for acceptance tests")
+		t.Skip("TF_VAR_domain must be set for acceptance tests")
 	}
 
 	timestamp := time.Now().Unix()
@@ -44,7 +44,7 @@ func TestAccTransipResourceDomain(t *testing.T) {
 
 func TestAccTransipResourceDomainMultiple(t *testing.T) {
 	if v := os.Getenv("TF_VAR_domain"); v == "" {
-		t.Fatal("TF_VAR_domain must be set for acceptance tests")
+		t.Skip("TF_VAR_domain must be set for acceptance tests")
 	}
 
 	timestamp := time.Now().Unix()
@@ -77,7 +77,7 @@ func TestAccTransipResourceDomainMultiple(t *testing.T) {
 
 func TestAccTransipResourceDomainUpdate(t *testing.T) {
 	if v := os.Getenv("TF_VAR_domain"); v == "" {
-		t.Fatal("TF_VAR_domain must be set for acceptance tests")
+		t.Skip("TF_VAR_domain must be set for acceptance tests")
 	}
 
 	timestamp := time.Now().Unix()
@@ -132,11 +132,11 @@ func TestAccTransipResourceDomainUpdate(t *testing.T) {
 
 func TestAccTransipResourceDomainConcurrent(t *testing.T) {
 	if v := os.Getenv("TF_VAR_domain"); v == "" {
-		t.Fatal("TF_VAR_domain must be set for acceptance tests")
+		t.Skip("TF_VAR_domain must be set for acceptance tests")
 	}
 
 	if v := os.Getenv("TF_VAR_domain"); v == "" {
-		t.Fatal("TF_VAR_domain must be set for acceptance tests")
+		t.Skip("TF_VAR_domain must be set for acceptance tests")
 	}
 
 	timestamp := time.Now().Unix()
