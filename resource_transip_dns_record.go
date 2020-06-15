@@ -233,7 +233,7 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDNSRecordDelete(d *schema.ResourceData, m interface{}) error {
-	d.Set("content", make([]interface{}, 0))
+	d.Set("content", []string{})
 
 	return resourceDNSRecordUpdate(d, m)
 }

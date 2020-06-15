@@ -183,11 +183,6 @@ func TestAccTransipResourceDomainConcurrentMultiple(t *testing.T) {
 		t.Skip("TF_VAR_domain must be set for acceptance tests")
 	}
 
-	domain := os.Getenv("TF_VAR_domain")
-	if domain == "" {
-		t.Skip("TF_VAR_domain must be set for acceptance tests")
-	}
-
 	timestamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
   terraform { required_version = ">= 0.12.0" }

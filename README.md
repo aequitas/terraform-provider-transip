@@ -6,9 +6,11 @@ Provides resources for Transip resources using [Transip API](https://www.transip
 
 Supported resources:
 
-    - Domain name (data source, resource)
-    - Domain name DNS records (resource)
-    - VPS (data source, resource)
+ - Domain name (data source, resource)
+ - Domain name DNS records (resource)
+ - VPS (data source, resource)
+ - VPS private network (data source, resource)
+ - VPS firewall (resource)
 
 ## Requirements
 
@@ -21,8 +23,6 @@ Download the latest binary release from the [Releases](https://github.com/aequit
 ## Notes
 
 - The Transip API managed DNS Entries as a list property of a Domain object. In this implementation I have opted to give DNS entries their own resource `transip_dns_record` to make management more in line with other Terraform DNS Providers.
-
-- Concurrently updating of DNS Entries is currently unstable. To improve reliability run Terraform with `-parallelism=1`.
 
 - Not all resources (especially the VPS resource) have been thoroughly tested. Use with care.
 
