@@ -39,6 +39,10 @@ func resourcePrivateNetworkAttachment() *schema.Resource {
 }
 
 func resourcePrivateNetworkAttachmentCreate(d *schema.ResourceData, m interface{}) error {
+	errorStrings := []string{
+		"has an action running, no modification is allowed",
+		"is already locked to another action"}
+
 	privateNetworkID := d.Get("private_network_id").(string)
 	vpsID := d.Get("vps_id").(string)
 
@@ -49,8 +53,10 @@ func resourcePrivateNetworkAttachmentCreate(d *schema.ResourceData, m interface{
 
 		err := repository.AttachVps(vpsID, privateNetworkID)
 		if err != nil {
-			if strings.Contains(err.Error(), fmt.Sprintf("VPS '%s' has an action running, no modification is allowed", vpsID)) {
-				return resource.RetryableError(fmt.Errorf("failed to attach VPS %s to private network %s, VPS busy: %s", vpsID, privateNetworkID, err))
+			for _, errorString := range errorStrings {
+				if strings.Contains(err.Error(), errorString) {
+					return resource.RetryableError(fmt.Errorf("failed to attach VPS %s to private network %s, VPS busy: %s; retrying", vpsID, privateNetworkID, err))
+				}
 			}
 			return resource.NonRetryableError(fmt.Errorf("failed to attach private network %s to VPS %s: %s", privateNetworkID, vpsID, err))
 		}
