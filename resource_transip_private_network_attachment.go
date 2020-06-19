@@ -41,7 +41,8 @@ func resourcePrivateNetworkAttachment() *schema.Resource {
 func resourcePrivateNetworkAttachmentCreate(d *schema.ResourceData, m interface{}) error {
 	errorStrings := []string{
 		"has an action running, no modification is allowed",
-		"is already locked to another action"}
+		"is already locked to another action",
+		"EOF"}
 
 	privateNetworkID := d.Get("private_network_id").(string)
 	vpsID := d.Get("vps_id").(string)
