@@ -220,3 +220,113 @@ func TestAccTransipResourceDomainConcurrentMultiple(t *testing.T) {
 		},
 	})
 }
+
+func TestAccTransipResourceDomainRenameRecord(t *testing.T) {
+	if v := os.Getenv("TF_VAR_domain"); v == "" {
+		t.Skip("TF_VAR_domain must be set for acceptance tests")
+	}
+
+	timestamp := time.Now().Unix()
+	testConfig := fmt.Sprintf(`
+	terraform { required_version = ">= 0.12.0" }
+
+	data "transip_domain" "test" {
+		name = "%s"
+	}
+
+	resource "transip_dns_record" "test" {
+		domain  = data.transip_domain.test.id
+		name    = "terraform-provider-transip-%d"
+		type    = "A"
+		content = ["192.0.2.0", "192.0.2.1"]
+	}
+  `, os.Getenv("TF_VAR_domain"), timestamp)
+	testConfig2 := fmt.Sprintf(`
+	terraform { required_version = ">= 0.12.0" }
+
+	data "transip_domain" "test" {
+		name = "%s"
+	}
+
+	resource "transip_dns_record" "test" {
+		domain  = data.transip_domain.test.id
+		name    = "terraform-provider-transip-changed-%d"
+		type    = "A"
+		content = ["192.0.2.0", "192.0.2.1"]
+	}
+	`, os.Getenv("TF_VAR_domain"), timestamp)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("transip_dns_record.test", "content.#", "2"),
+				),
+			},
+			{
+				Config: testConfig2,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("transip_dns_record.test", "content.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccTransipResourceDomainChangeType(t *testing.T) {
+	if v := os.Getenv("TF_VAR_domain"); v == "" {
+		t.Skip("TF_VAR_domain must be set for acceptance tests")
+	}
+
+	timestamp := time.Now().Unix()
+	testConfig := fmt.Sprintf(`
+	terraform { required_version = ">= 0.12.0" }
+
+	data "transip_domain" "test" {
+		name = "%s"
+	}
+
+	resource "transip_dns_record" "test" {
+		domain  = data.transip_domain.test.id
+		name    = "terraform-provider-transip-%d"
+		type    = "A"
+		content = ["192.0.2.0", "192.0.2.1"]
+	}
+  `, os.Getenv("TF_VAR_domain"), timestamp)
+	testConfig2 := fmt.Sprintf(`
+	terraform { required_version = ">= 0.12.0" }
+
+	data "transip_domain" "test" {
+		name = "%s"
+	}
+
+	resource "transip_dns_record" "test" {
+		domain  = data.transip_domain.test.id
+		name    = "terraform-provider-transip-changed-%d"
+		type    = "CNAME"
+		content = ["example.com."]
+	}
+	`, os.Getenv("TF_VAR_domain"), timestamp)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("transip_dns_record.test", "content.#", "2"),
+				),
+			},
+			{
+				Config: testConfig2,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("transip_dns_record.test", "content.#", "1"),
+				),
+			},
+		},
+	})
+}

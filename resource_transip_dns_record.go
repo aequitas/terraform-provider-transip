@@ -65,6 +65,8 @@ func resourceDNSRecord() *schema.Resource {
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				// TODO: could probably be solved better, but this will do for now
+				ForceNew: true,
 			},
 			"expire": &schema.Schema{
 				Type:     schema.TypeInt,
