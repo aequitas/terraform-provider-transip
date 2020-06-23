@@ -1,10 +1,10 @@
 package main
 
 import (
+	"crypto/md5"
 	"encoding/base64"
 	"fmt"
-	"log"
-
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/transip/gotransip/v6"
@@ -24,16 +24,21 @@ func resourceVps() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Required:    true,
+				Computed:    true,
 				Description: "The unique VPS name.",
 				Type:        schema.TypeString,
-				ForceNew:    true,
 			},
 			"description": {
 				Optional:    true,
 				Description: "The name that can be set by customer.",
 				Type:        schema.TypeString,
 				ForceNew:    true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					if len(val.(string)) > 32 {
+						errs = append(errs, fmt.Errorf("%q must be less than 33 characters", key))
+					}
+					return
+				},
 			},
 			"product_name": {
 				Required:    true,
@@ -135,8 +140,9 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 	productName := d.Get("product_name").(string)
 	operatingSystem := d.Get("operating_system").(string)
 	availabilityZone := d.Get("availability_zone").(string)
+	description := d.Get("description").(string)
 	addons := []string{}
-	InstallText := d.Get("install_text").(string)
+	installText := d.Get("install_text").(string)
 
 	client := m.(repository.Client)
 	repository := vps.Repository{Client: client}
@@ -162,21 +168,31 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Failed to get available operating systems: %s", err)
 	}
 	validOs := false
+	var osNames []string
 	for _, os := range availableOss {
-		if os.Name == operatingSystem {
+		osNames = append(osNames, os.Name)
+	}
+	for _, osName := range osNames {
+		if osName == operatingSystem {
 			validOs = true
 		}
 	}
 	if !validOs {
-		return fmt.Errorf("Operating system %s is invalid. Valid operating system names are: %v", operatingSystem, availableOss)
+		return fmt.Errorf("Operating system %s is invalid. Valid operating system names are: %v", operatingSystem, osNames)
 	}
 
-	base64InstallText := base64.StdEncoding.EncodeToString([]byte(InstallText))
+	base64InstallText := base64.StdEncoding.EncodeToString([]byte(installText))
+
+	// Generate a unique temporary description to assign during VPS creation so we can reference
+	// the VPS afterwards and get a Transip generated unique name.
+	// Must be no more than 32 characters, hence MD5 hash.
+	tempDescription := fmt.Sprintf("%x", md5.Sum([]byte(uuid.New().String())))
 
 	vpsOrder := vps.Order{
 		ProductName:       productName,
 		OperatingSystem:   operatingSystem,
 		AvailabilityZone:  availabilityZone,
+		Description:       tempDescription,
 		Hostname:          name,
 		Addons:            addons,
 		Base64InstallText: base64InstallText,
@@ -188,22 +204,31 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 
 	}
 
-	d.Set("install_text", InstallText)
+	d.Set("install_text", installText)
 
+	// Wait for VPS to be in a "running" state
 	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		log.Printf("[DEBUG] terraform-provider-transip trying to get id for VPS %s \n", name)
-
 		// The set name in the Terraform resource is not the same as the name used to query details about a VPS.
 		// You'll need the unique name Transip generates to get the VPS details.
 		all, err := repository.GetAll()
 		if err != nil {
 			return resource.NonRetryableError(fmt.Errorf("failed to get all VPS's: %s", err))
 		}
-		for _, vps := range all {
-			if vps.Description == name {
-				d.SetId(vps.Name)
-				log.Printf("[DEBUG] terraform-provider-transip id found for VPS %s:%s \n", name, d.Id())
+		for _, v := range all {
+			if v.Description != tempDescription {
+				continue
 			}
+			if v.Status != vps.VpsStatusRunning {
+				return resource.RetryableError(fmt.Errorf("VPS %s, not yet running.", d.Id()))
+			}
+			// replace temporary description with actual one
+			v.Description = description
+			err := repository.Update(v)
+			if err != nil {
+				return resource.RetryableError(fmt.Errorf("Failed to update description for VPS %s.", d.Id()))
+			}
+
+			d.SetId(v.Name)
 		}
 		if d.Id() == "" {
 			return resource.RetryableError(fmt.Errorf("Failed to set ID for VPS %s", d.Id()))
@@ -242,7 +267,6 @@ func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
 	// Description returned by TransIP API == user defined name.
 	d.Set("description", v.Description)
 	d.Set("product_name", v.ProductName)
-	d.Set("operating_system", v.OperatingSystem)
 	d.Set("disk_size", v.DiskSize)
 	d.Set("memory_size", v.MemorySize)
 	d.Set("cpus", v.CPUs)
@@ -256,6 +280,18 @@ func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("tags", v.Tags)
 	d.Set("ipv4_addresses", ipv4Addresses)
 	d.Set("ipv6_addresses", ipv6Addresses)
+
+	// Transip API requires OS Name for creating VPS but return OS Description on a VPS query.
+	// So it needs to be translated to avoid Terraform detecting changes.
+	operatingSystems, err := repository.GetOperatingSystems("x")
+	if err != nil {
+		return fmt.Errorf("Failed to get available operating systems: %s", err)
+	}
+	for _, os := range operatingSystems {
+		if os.Description == v.OperatingSystem {
+			d.Set("operating_system", os.Name)
+		}
+	}
 
 	return nil
 }

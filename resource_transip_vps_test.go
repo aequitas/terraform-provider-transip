@@ -18,11 +18,10 @@ func TestAccTransipResourceVpsImport(t *testing.T) {
 
 	testConfig := fmt.Sprintf(`
 	resource "transip_vps" "test" {
-		name             = "%s"
     product_name     = "vps-bladevps-x1"
     operating_system = "Debian 6"
 	}
-	`, vpsName)
+	`)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -52,7 +51,7 @@ func TestAccTransipResourceVps(t *testing.T) {
 	timestamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
 	resource "transip_vps" "test" {
-		name             = "test-%d"
+		description             = "test-%d"
     product_name     = "vps-bladevps-x1"
     operating_system = "ubuntu-20.04"
 	}

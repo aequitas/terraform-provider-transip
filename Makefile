@@ -47,7 +47,10 @@ comma=,
 _targets = $(addprefix -target=,$(subst ${comma}, ,${targets}))
 
 apply: init
-	terraform apply -parallelism=1 ${_targets} examples/
+	terraform apply ${_targets} examples/
+
+destroy: init
+	terraform destroy ${_targets} examples/
 
 plan: init
 	terraform plan -detailed-exitcode ${_targets} examples/
