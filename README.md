@@ -91,7 +91,7 @@ resource "transip_dns_record" "www" {
 
 # VPS Server with setup script and DNS record
 resource "transip_vps" "test" {
-  name = "example"
+  description = "example"
   product_name = "vps-bladevps-x1"
   operating_system = "ubuntu-18.04"
 
@@ -140,7 +140,7 @@ resource "transip_dns_record" "testv6" {
 
 # Get an existing VPS as datasource
 data "transip_vps" "test" {
-  name = "example"
+  description = "example"
 }
 
 # Set hostname for VPS using data source
