@@ -21,6 +21,8 @@ In order to use the provider you need a Transip account. For this account the AP
 
 ## Installation
 
+### Terraform 0.13
+
 Add the following snippet to a `.tf` somewhere in your codebase and run `terraform init` to automatically download and install the provider:
 
 ```hcl
@@ -33,7 +35,9 @@ terraform {
 }
 ```
 
-Or download the latest binary release from the [Releases](https://github.com/aequitas/terraform-provider-transip/releases) page, unzip it to a location in `PATH` (eg: `/usr/local/bin/`). Or refer to [Installing Plugins](https://www.terraform.io/docs/plugins/basics.html#installing-plugins) for more information.
+### Terraform <=0.12
+
+Download the latest binary release from the [Releases](https://github.com/aequitas/terraform-provider-transip/releases) page, unzip it to a location in `PATH` (eg: `/usr/local/bin/`). Or refer to [Installing Plugins](https://www.terraform.io/docs/plugins/basics.html#installing-plugins) for more information.
 
 ## Notes
 
@@ -44,7 +48,7 @@ Or download the latest binary release from the [Releases](https://github.com/aeq
 ## Example
 
 Also see examples in: [examples/](https://github.com/aequitas/terraform-provider-transip/tree/master/examples).
-
+# Have Terraform install provider on init (Terraform 0.13 only)
 ```hcl
 terraform {
   required_providers {

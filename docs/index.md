@@ -5,6 +5,7 @@ Provides resources for Transip resources using [Transip API](https://www.transip
 ## Example Usage
 
 ```hcl
+# Have Terraform install provider on init (Terraform 0.13 only)
 terraform {
   required_providers {
     transip = {
