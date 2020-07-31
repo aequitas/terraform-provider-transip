@@ -55,8 +55,8 @@ resource "transip_dns_record" "vps" {
 
 ## Argument Reference
 
-* `account_name` - (Required) Name of the Transip account.
-* `private_key` - (Required) Contents of the private key file to be used to authenticate.
 * `access_token` - (Optional) Temporary access token used for authentication.
+* `account_name` - (Optional) Name of the Transip account.
+* `private_key` - (Optional) Contents of the private key file to be used to authenticate.
 * `read_only` - (Optional) Disable API write calls.
 * `test_mode` - (Optional) Use API test mode.

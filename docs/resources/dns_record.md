@@ -21,12 +21,12 @@ resource "transip_dns_record" "demo" {
 
 ## Argument Reference
 
-* `domain` - (Required) Domain name to register the record under.
-* `name` - (Required) Name of the record.
-* `expire` - (Required) TTL/expiry time in seconds.
-* `type` - (Required) Type of the record (eg: A, AAAA, CNAME, TXT).
-* `content` - (Required) List of record contents (eg: IP address).
+* `content` - (Required) n/a
+* `domain` - (Required) n/a
+* `expire` - (Optional) n/a
+* `name` - (Required) n/a
+* `type` - (Required) n/a
 
 ## Attribute Reference
 
-* N/A
+* `id` - n/a

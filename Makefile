@@ -61,7 +61,7 @@ terraform-provider-transip_${version}_%_${arch}.zip: build/%_${arch}/terraform-p
 terraform-provider-transip_${version}_%_${arch}.tgz: build/%_${arch}/terraform-provider-transip_${version}
 	tar -zcf $@ -C ${<D} ${<F}
 
-build/%_${arch}/terraform-provider-transip_${version}: $(wildcard *.go)
+build/%_${arch}/terraform-provider-transip_${version}: $(wildcard *.go) go.mod
 	mkdir -p ${@D}; GOOS=$* go build -o $@
 
 test_acc: test
@@ -70,8 +70,15 @@ test_acc: TF_ACC=1
 test:
 	TF_ACC=${TF_ACC} go test -v
 
+.PHONY: docs
+docs: | init
+	@echo 'provider "transip" {}' > tmp.tf
+	mkdir -p docs/{resources,data-sources}/
+	terraform providers schema -json | ./tools/docs.py
+	@rm -f tmp.tf
+
 clean:
-	rm -rf terraform-provider-transip* build/
+	rm -rf terraform-provider-transip* build/ docs/
 	rm -rf .terraform/ terraform.tfstate
 
 mrproper: clean
