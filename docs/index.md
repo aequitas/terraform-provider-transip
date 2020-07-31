@@ -5,6 +5,14 @@ Provides resources for Transip resources using [Transip API](https://www.transip
 ## Example Usage
 
 ```hcl
+terraform {
+  required_providers {
+    transip = {
+      source = "aequitas/transip"
+    }
+  }
+}
+
 provider "transip" {
   account_name = "example"
   private_key  = <<EOF
