@@ -12,95 +12,95 @@ func dataSourceVps() *schema.Resource {
 		Read: dataSourceVpsRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Required:    true,
 				Type:        schema.TypeString,
 				Description: "The unique VPS name.",
+				Required:    true,
 			},
 			"description": {
-				Computed:    true,
 				Type:        schema.TypeString,
 				Description: "The name that can be set by customer.",
+				Computed:    true,
 			},
 			"product_name": {
-				Computed:    true,
 				Type:        schema.TypeString,
 				Description: "The product name.",
+				Computed:    true,
 			},
 			"operating_system": {
-				Computed:    true,
 				Type:        schema.TypeString,
 				Description: "The VPS OperatingSystem.",
+				Computed:    true,
 			},
 			"disk_size": {
-				Computed:    true,
 				Type:        schema.TypeInt,
 				Description: "The VPS disk size in kB.",
+				Computed:    true,
 			},
 			"memory_size": {
-				Computed:    true,
 				Type:        schema.TypeInt,
 				Description: "The VPS memory size in kB.",
+				Computed:    true,
 			},
 			"cpus": {
-				Computed:    true,
 				Type:        schema.TypeInt,
 				Description: "The VPS cpu count.",
+				Computed:    true,
 			},
 			"status": {
-				Computed:    true,
 				Type:        schema.TypeString,
 				Description: "The VPS status, either 'created', 'installing', 'running', 'stopped' or 'paused'.",
+				Computed:    true,
 			},
 			"ip_address": {
-				Computed:    true,
 				Type:        schema.TypeString,
 				Description: "The VPS main ipAddress.",
+				Computed:    true,
 			},
 			"mac_address": {
-				Computed:    true,
 				Type:        schema.TypeString,
 				Description: "The VPS macaddress.",
+				Computed:    true,
 			},
 			"is_locked": {
-				Computed:    true,
 				Type:        schema.TypeBool,
 				Description: "Whether or not another process is already doing stuff with this VPS.",
+				Computed:    true,
 			},
 			"is_blocked": {
-				Computed:    true,
 				Type:        schema.TypeBool,
 				Description: "If the VPS is administratively blocked.",
+				Computed:    true,
 			},
 			"is_customer_locked": {
-				Computed:    true,
 				Type:        schema.TypeBool,
 				Description: "If this VPS is locked by the customer.",
+				Computed:    true,
 			},
 			"availability_zone": {
-				Computed:    true,
 				Type:        schema.TypeString,
 				Description: "The name of the availability zone the VPS is in.",
+				Computed:    true,
 			},
 			"tags": {
-				Computed:    true,
 				Type:        schema.TypeList,
 				Description: "The custom tags added to this VPS.",
+				Computed:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
 			"ipv4_addresses": {
-				Computed:    true,
 				Type:        schema.TypeList,
 				Description: "All IPV4 addresses associated with this VPS.",
+				Computed:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
 			"ipv6_address": {
-				Computed:    true,
 				Type:        schema.TypeList,
 				Description: "All IPV6 addresses associated with this VPS.",
+				Computed:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

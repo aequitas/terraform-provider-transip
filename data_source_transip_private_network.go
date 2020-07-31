@@ -13,30 +13,30 @@ func dataSourcePrivateNetwork() *schema.Resource {
 		Read: dataSourcePrivateNetworkRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Required:    true,
 				Type:        schema.TypeString,
 				Description: "The unique private network name",
+				Required:    true,
 				ForceNew:    true,
 			},
 			"description": {
-				Computed:    true,
 				Type:        schema.TypeString,
 				Description: "The custom name that can be set by customer.",
+				Computed:    true,
 			},
 			"is_blocked": {
-				Computed:    true,
 				Type:        schema.TypeString,
 				Description: "If the Private Network is administratively blocked.",
+				Computed:    true,
 			},
 			"is_locked": {
-				Computed:    true,
 				Type:        schema.TypeString,
-				Description: "When locked, another process is already working with this private network.",
+				Description: "When locked, another process is already working with this privatenetwork.",
+				Computed:    true,
 			},
 			"vps_names": {
-				Computed:    true,
 				Type:        schema.TypeList,
 				Description: "The VPSes in this private network.",
+				Computed:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
