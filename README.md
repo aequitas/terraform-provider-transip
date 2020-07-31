@@ -4,6 +4,9 @@
 
 Provides resources for Transip resources using [Transip API](https://www.transip.eu/transip/api/)
 
+ - [Terraform Registry](https://registry.terraform.io/providers/aequitas/transip/latest)
+ - [Terraform Registry Documentation](https://registry.terraform.io/providers/aequitas/transip/latest/docs)
+
 Supported resources:
 
  - Domain name (data source, resource)
@@ -31,6 +34,14 @@ Download the latest binary release from the [Releases](https://github.com/aequit
 Also see examples in: [examples/](https://github.com/aequitas/terraform-provider-transip/tree/master/examples).
 
 ```hcl
+terraform {
+  required_providers {
+    transip = {
+      source = "aequitas/transip"
+    }
+  }
+}
+
 # Enable Transip API, whitelist your IP, create private key and provide it here
 provider "transip" {
   account_name = "example"
