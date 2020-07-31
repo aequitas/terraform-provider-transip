@@ -21,7 +21,19 @@ In order to use the provider you need a Transip account. For this account the AP
 
 ## Installation
 
-Download the latest binary release from the [Releases](https://github.com/aequitas/terraform-provider-transip/releases) page, unzip it to a location in `PATH` (eg: `/usr/local/bin/`).
+Add the following snippet to a `.tf` somewhere in your codebase and run `terraform init` to automatically download and install the provider:
+
+```hcl
+terraform {
+  required_providers {
+    transip = {
+      source = "aequitas/transip"
+    }
+  }
+}
+```
+
+Or download the latest binary release from the [Releases](https://github.com/aequitas/terraform-provider-transip/releases) page, unzip it to a location in `PATH` (eg: `/usr/local/bin/`). Or refer to [Installing Plugins](https://www.terraform.io/docs/plugins/basics.html#installing-plugins) for more information.
 
 ## Notes
 
