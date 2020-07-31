@@ -24,8 +24,9 @@ func resourceDomain() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name, including the tld of this domain",
+				Required:    true,
 				// TODO: implement update
 				ForceNew: true,
 			},

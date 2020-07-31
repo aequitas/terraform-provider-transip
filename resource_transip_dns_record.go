@@ -53,14 +53,15 @@ func resourceDNSRecord() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"domain": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name, including the tld of the domain.",
+				Required:    true,
+				ForceNew:    true,
 				// TODO: true for transip?
 				StateFunc: func(v interface{}) string {
 					value := strings.TrimSuffix(v.(string), ".")
 					return strings.ToLower(value)
 				},
-				ForceNew: true,
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -77,8 +78,8 @@ func resourceDNSRecord() *schema.Resource {
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
 				Description: "The type of dns entry. Possbible types are 'A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP' and 'TLSA'.",
+				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"A", "AAAA", "CAA", "CNAME", "MX", "NS", "TXT", "SRV", "SSHFP", "TLSA",
 				}, false),
@@ -86,10 +87,10 @@ func resourceDNSRecord() *schema.Resource {
 			"content": &schema.Schema{
 				Type:        schema.TypeSet,
 				Description: "The content of of the dns entry, for example '10 mail', '127.0.0.1' or 'www'.",
+				Required:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Required: true,
 			},
 		},
 	}
