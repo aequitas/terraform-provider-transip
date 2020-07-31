@@ -70,12 +70,14 @@ func Provider() *schema.Provider {
 			"transip_vps_firewall":               resourceVpsFirewall(),
 			"transip_private_network":            resourcePrivateNetwork(),
 			"transip_private_network_attachment": resourcePrivateNetworkAttachment(),
+			"transip_sshkey":                     resourceSSHKey(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"transip_domain":          dataSourceDomain(),
 			"transip_vps":             dataSourceVps(),
 			"transip_private_network": dataSourcePrivateNetwork(),
+			"transip_sshkey":          datasourceSSHKey(),
 		},
 	}
 }
