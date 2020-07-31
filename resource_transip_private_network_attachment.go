@@ -21,18 +21,16 @@ func resourcePrivateNetworkAttachment() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"private_network_id": {
-				Required: true,
-				Type:     schema.TypeString,
-				ForceNew: true,
+				Required:    true,
+				Description: "Name of the Private Network.",
+				Type:        schema.TypeString,
+				ForceNew:    true,
 			},
 			"vps_id": {
-				Required: true,
-				Type:     schema.TypeString,
-				ForceNew: true,
-			},
-			"action": {
-				Computed: true,
-				Type:     schema.TypeString,
+				Required:    true,
+				Description: "VPN name the Private Network is attached to.",
+				Type:        schema.TypeString,
+				ForceNew:    true,
 			},
 		},
 	}

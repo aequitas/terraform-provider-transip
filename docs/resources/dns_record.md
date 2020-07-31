@@ -1,31 +1,14 @@
-# DNS Record Resource
+# Dns Record Resource
 
-DNS record for zones managed by Transip.
 
-## Example Usage
-
-```hcl
-data "transip_domain" "demo" {
-  name = var.domain
-}
-
-resource "transip_dns_record" "demo" {
-  domain  = data.transip_domain.demo.id
-  name    = "demo"
-  type    = "A"
-  content = [
-    "192.0.2.0",
-  ]
-}
-```
 
 ## Argument Reference
 
-* `content` - (Required) n/a
+* `content` - (Required) The content of of the dns entry, for example '10 mail', '127.0.0.1' or 'www'.
 * `domain` - (Required) n/a
-* `expire` - (Optional) n/a
-* `name` - (Required) n/a
-* `type` - (Required) n/a
+* `expire` - (Optional) The expiration period of the dns entry, in seconds. For example 86400 for a day of expiration.
+* `name` - (Required) The name of the dns entry, for example '@' or 'www'.
+* `type` - (Required) The type of dns entry. Possbible types are 'A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP' and 'TLSA'.
 
 ## Attribute Reference
 

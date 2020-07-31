@@ -63,25 +63,29 @@ func resourceDNSRecord() *schema.Resource {
 				ForceNew: true,
 			},
 			"name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the dns entry, for example '@' or 'www'.",
+				Required:    true,
 				// TODO: could probably be solved better, but this will do for now
 				ForceNew: true,
 			},
 			"expire": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  86400,
+				Type:        schema.TypeInt,
+				Description: "The expiration period of the dns entry, in seconds. For example 86400 for a day of expiration.",
+				Optional:    true,
+				Default:     86400,
 			},
 			"type": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The type of dns entry. Possbible types are 'A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP' and 'TLSA'.",
 				ValidateFunc: validation.StringInSlice([]string{
 					"A", "AAAA", "CAA", "CNAME", "MX", "NS", "TXT", "SRV", "SSHFP", "TLSA",
 				}, false),
 			},
 			"content": &schema.Schema{
-				Type: schema.TypeSet,
+				Type:        schema.TypeSet,
+				Description: "The content of of the dns entry, for example '10 mail', '127.0.0.1' or 'www'.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

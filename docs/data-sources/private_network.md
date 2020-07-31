@@ -4,12 +4,12 @@
 
 ## Argument Reference
 
-* `name` - (Required) n/a
+* `name` - (Required) The unique private network name
 
 ## Attribute Reference
 
-* `description` - n/a
+* `description` - The custom name that can be set by customer.
 * `id` - n/a
-* `is_blocked` - n/a
-* `is_locked` - n/a
-* `vps_names` - n/a
+* `is_blocked` - If the Private Network is administratively blocked.
+* `is_locked` - When locked, another process is already working with this private network.
+* `vps_names` - The VPSes in this private network.

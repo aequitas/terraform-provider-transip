@@ -4,24 +4,24 @@
 
 ## Argument Reference
 
-* `availability_zone` - (Optional) n/a
-* `description` - (Optional) n/a
-* `install_text` - (Optional) n/a
-* `name` - (Required) n/a
-* `operating_system` - (Required) n/a
-* `product_name` - (Required) n/a
+* `availability_zone` - (Optional) The name of the availability zone the VPS is in.
+* `description` - (Optional) The name that can be set by customer.
+* `install_text` - (Optional) Base64 encoded preseed / kickstart / cloudinit instructions, when installing unattended.
+* `name` - (Required) The unique VPS name.
+* `operating_system` - (Required) The VPS OperatingSystem.
+* `product_name` - (Required) The product name.
 
 ## Attribute Reference
 
-* `cpus` - n/a
-* `disk_size` - n/a
+* `cpus` - The VPS cpu count.
+* `disk_size` - The VPS disk size in kB.
 * `id` - n/a
-* `ip_address` - n/a
-* `ipv4_addresses` - n/a
-* `ipv6_addresses` - n/a
-* `is_blocked` - n/a
-* `is_customer_locked` - n/a
-* `mac_address` - n/a
-* `memory_size` - n/a
-* `status` - n/a
-* `tags` - n/a
+* `ip_address` - The VPS main ipAddress.
+* `ipv4_addresses` - All IPV4 addresses associated with this VPS.
+* `ipv6_addresses` - All IPV6 addresses associated with this VPS.
+* `is_blocked` - If the VPS is administratively blocked.
+* `is_customer_locked` - If this VPS is locked by the customer.
+* `mac_address` - The VPS macaddress.
+* `memory_size` - The VPS memory size in kB.
+* `status` - The VPS status, either 'created', 'installing', 'running', 'stopped' or 'paused'.
+* `tags` - The custom tags added to this VPS.

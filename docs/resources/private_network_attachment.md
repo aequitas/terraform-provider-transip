@@ -4,10 +4,9 @@
 
 ## Argument Reference
 
-* `private_network_id` - (Required) n/a
-* `vps_id` - (Required) n/a
+* `private_network_id` - (Required) Name of the Private Network.
+* `vps_id` - (Required) VPN name the Private Network is attached to.
 
 ## Attribute Reference
 
-* `action` - n/a
 * `id` - n/a

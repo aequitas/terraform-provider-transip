@@ -66,7 +66,7 @@ func vpsFirewallRuleSchema() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Required:    true,
-				Description: "Description of the rule",
+				Description: "The rule name.",
 			},
 			"protocol": {
 				Type:         schema.TypeString,
@@ -74,7 +74,7 @@ func vpsFirewallRuleSchema() *schema.Resource {
 				Optional:     true,
 				Default:      "tcp",
 				ValidateFunc: validation.StringInSlice([]string{"tcp", "udp", "tcp_udp"}, false),
-				Description:  "Protocol for this rule (tcp, udp or tcp_udp)",
+				Description:  "The protocol `tcp`, `udp` or `tcp_udp`.",
 			},
 			"port": {
 				Type:        schema.TypeString,
@@ -90,7 +90,7 @@ func vpsFirewallRuleSchema() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.CIDRNetwork(0, 128),
 				},
-				Description: "Whitelisted IP's or ranges that are allowed to connect, empty to allow all",
+				Description: "Whitelisted IP's or ranges that are allowed to connect, empty to allow all.",
 			},
 		},
 	}
