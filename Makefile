@@ -1,3 +1,5 @@
+.PHONY: release release_upload import plan init install test_acc test docs clean mrproper
+
 version = $(shell git describe --tags --abbrev=0)
 os = $(shell uname -s|tr '[:upper:]' '[:lower:]')
 arch = amd64
@@ -16,13 +18,18 @@ signatures = \
 	terraform-provider-transip_${version}_SHA256SUMS \
 	terraform-provider-transip_${version}_SHA256SUMS.sig
 
-release: ${releases} ${signatures}
+release_artifacts = ${releases} ${signatures}
+
+upload_release: ${release_artifacts} | hub
+	hub release create $(addprefix -a ,$^) ${version}
+
+release: ${release_artifacts}
 
 terraform-provider-transip_${version}_SHA256SUMS: ${releases}
 	shasum -a 256 $^ > $@
 
 terraform-provider-transip_${version}_SHA256SUMS.sig: %.sig: %
-	gpg --detach-sign -u $SIGNING_ID $<
+	gpg --detach-sign -u ${SIGNING_ID} $<
 
 builds = \
 	build/darwin_${arch}/terraform-provider-transip_${version} \
@@ -47,7 +54,7 @@ plan: init
 
 init: .terraform/plugins/darwin_amd64/lock.json
 
-.terraform/plugins/darwin_amd64/lock.json: terraform.d/plugins/${os}_${arch}/terraform-provider-transip_${version}
+.terraform/plugins/darwin_amd64/lock.json: terraform.d/plugins/${os}_${arch}/terraform-provider-transip_${version} | terraform
 	terraform init examples/
 
 install: terraform.d/plugins/${os}_${arch}/terraform-provider-transip_${version}
@@ -70,7 +77,6 @@ test_acc: TF_ACC=1
 test:
 	TF_ACC=${TF_ACC} go test -v
 
-.PHONY: docs
 docs: | init
 	@echo 'provider "transip" {}' > tmp.tf
 	mkdir -p docs/{resources,data-sources}/
@@ -85,4 +91,6 @@ mrproper: clean
 	go clean -modcache
 	rm -rf ./gopath/
 
-.PHONY: release
+hub terraform: %: /usr/local/bin/%
+/usr/local/bin/%:
+	brew install $*
