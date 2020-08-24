@@ -37,7 +37,7 @@ terraform {
 
 ### Terraform <=0.12
 
-Download the latest binary release from the [Releases](https://github.com/aequitas/terraform-provider-transip/releases) page, unzip it to a location in `PATH` (eg: `/usr/local/bin/`). Or refer to [Installing Plugins](https://www.terraform.io/docs/plugins/basics.html#installing-plugins) for more information.
+Download the latest binary release from the [Releases](https://github.com/aequitas/terraform-provider-transip/releases) page, unzip it to one of these directories: [Plugin Locations](https://www.terraform.io/docs/extend/how-terraform-works.html#plugin-locations). Or refer to [Installing Plugins](https://www.terraform.io/docs/plugins/basics.html#installing-plugins) for more information.
 
 ## Notes
 

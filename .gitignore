@@ -5,6 +5,7 @@
 terraform-provider-*
 
 build/
+dist/
 
 gopath/
 
