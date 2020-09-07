@@ -236,7 +236,8 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 		if d.Id() == "" {
 			return resource.RetryableError(fmt.Errorf("Failed to set ID for VPS %s", d.Id()))
 		}
-		return resource.NonRetryableError(resourceVpsRead(d, m))
+		// Update first instead of read, as if user sets is_customer_locked to true it won't be set until a second apply is done.
+		return resource.NonRetryableError(resourceVpsUpdate(d, m))
 	})
 }
 
