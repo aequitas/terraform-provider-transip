@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -17,7 +18,7 @@ func resourceVps() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceVpsCreate,
 		Read:   resourceVpsRead,
-		// Update: resourceVpsUpdate,
+		Update: resourceVpsUpdate,
 		Delete: resourceVpsDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -294,6 +295,29 @@ func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return nil
+}
+
+func resourceVpsUpdate(d *schema.ResourceData, m interface{}) error {
+	client := m.(repository.Client)
+	repository := vps.Repository{Client: client}
+	description := d.Get("description").(string)
+
+	vps := vps.Vps{
+		// Unique ID provided by TransIP
+		Name:             d.Id(),
+		Description:      description,
+		DiskSize:         d.Get("disk_size").(int64),
+		MemorySize:       d.Get("memory_size").(int64),
+		CPUs:             d.Get("cpus").(int),
+		IsCustomerLocked: d.Get("is_customer_locked").(bool),
+	}
+
+	err := repository.Update(vps)
+
+	if err != nil {
+		return fmt.Errorf("failed to update vps %s with id %q: %s", description, d.Id(), err)
+	}
+	return resourceVpsRead(d, m)
 }
 
 func resourceVpsDelete(d *schema.ResourceData, m interface{}) error {
