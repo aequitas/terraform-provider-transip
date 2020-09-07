@@ -89,9 +89,11 @@ func resourceVps() *schema.Resource {
 				Type:        schema.TypeBool,
 			},
 			"is_customer_locked": {
-				Computed:    true,
+				Optional:    true,
 				Description: "If this VPS is locked by the customer.",
 				Type:        schema.TypeBool,
+				Default:     false,
+				ForceNew:    false,
 			},
 			"availability_zone": {
 				Optional:    true,
@@ -303,8 +305,7 @@ func resourceVpsUpdate(d *schema.ResourceData, m interface{}) error {
 	description := d.Get("description").(string)
 
 	vps := vps.Vps{
-		// Unique ID provided by TransIP
-		Name:             d.Id(),
+		Name:             d.Id(), // Unique ID provided by TransIP
 		Description:      description,
 		DiskSize:         d.Get("disk_size").(int64),
 		MemorySize:       d.Get("memory_size").(int64),
