@@ -303,12 +303,15 @@ func resourceVpsUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(repository.Client)
 	repository := vps.Repository{Client: client}
 	description := d.Get("description").(string)
+	diskSize := d.Get("disk_size").(int)
+	memorySize := d.Get("memory_size").(int)
 
 	vps := vps.Vps{
-		Name:             d.Id(), // Unique ID provided by TransIP
-		Description:      description,
-		DiskSize:         d.Get("disk_size").(int64),
-		MemorySize:       d.Get("memory_size").(int64),
+		Name:        d.Id(), // Unique ID provided by TransIP
+		Description: description,
+		// TransIP API expects int64, while Terraform Schema expects TypeInt.
+		DiskSize:         int64(diskSize),
+		MemorySize:       int64(memorySize),
 		CPUs:             d.Get("cpus").(int),
 		IsCustomerLocked: d.Get("is_customer_locked").(bool),
 	}
