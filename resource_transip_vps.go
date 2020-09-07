@@ -303,24 +303,22 @@ func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
 func resourceVpsUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(repository.Client)
 	repository := vps.Repository{Client: client}
-	description := d.Get("description").(string)
-	diskSize := d.Get("disk_size").(int)
-	memorySize := d.Get("memory_size").(int)
 
 	vps := vps.Vps{
-		Name:        d.Id(), // Unique ID provided by TransIP
-		Description: description,
-		// TransIP API expects int64, while Terraform Schema expects TypeInt.
-		DiskSize:         int64(diskSize),
-		MemorySize:       int64(memorySize),
+		Name:             d.Id(), // Unique ID provided by TransIP
+		Description:      d.Get("description").(string),
 		CPUs:             d.Get("cpus").(int),
 		IsCustomerLocked: d.Get("is_customer_locked").(bool),
+
+		// TransIP API expects int64, while Terraform Schema expects TypeInt.
+		DiskSize:   int64(d.Get("disk_size").(int)),
+		MemorySize: int64(d.Get("memory_size").(int)),
 	}
 
 	err := repository.Update(vps)
 
 	if err != nil {
-		return fmt.Errorf("failed to update vps %s with id %q: %s", description, d.Id(), err)
+		return fmt.Errorf("failed to update vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
 	}
 	return resourceVpsRead(d, m)
 }
