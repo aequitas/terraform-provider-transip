@@ -33,7 +33,7 @@ func resourceVps() *schema.Resource {
 				Optional:    true,
 				Description: "The name that can be set by customer.",
 				Type:        schema.TypeString,
-				ForceNew:    true,
+				ForceNew:    false,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					if len(val.(string)) > 32 {
 						errs = append(errs, fmt.Errorf("%q must be less than 33 characters", key))
@@ -103,7 +103,7 @@ func resourceVps() *schema.Resource {
 				ForceNew:    true,
 			},
 			"tags": {
-				Computed:    true,
+				Optional:    true,
 				Description: "The custom tags added to this VPS.",
 				Type:        schema.TypeList,
 				Elem: &schema.Schema{
@@ -304,18 +304,17 @@ func resourceVpsUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(repository.Client)
 	repository := vps.Repository{Client: client}
 
-	vps := vps.Vps{
-		Name:             d.Id(), // Unique ID provided by TransIP
-		Description:      d.Get("description").(string),
-		CPUs:             d.Get("cpus").(int),
-		IsCustomerLocked: d.Get("is_customer_locked").(bool),
-
-		// TransIP API expects int64, while Terraform Schema expects TypeInt.
-		DiskSize:   int64(d.Get("disk_size").(int)),
-		MemorySize: int64(d.Get("memory_size").(int)),
+	vps, err := repository.GetByName(d.Id())
+	if err != nil {
+		return fmt.Errorf("failed to get details for vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
 	}
 
-	err := repository.Update(vps)
+	vps.Description = d.Get("description").(string)
+	vps.IsCustomerLocked = d.Get("is_customer_locked").(bool)
+	// Below results in a conversion error: interface conversion: interface {} is []interface {}, not []string
+	// vps.Tags = d.Get("tags").([]string)
+
+	err = repository.Update(vps)
 
 	if err != nil {
 		return fmt.Errorf("failed to update vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
