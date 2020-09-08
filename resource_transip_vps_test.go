@@ -47,16 +47,14 @@ func TestAccTransipResourceVps(t *testing.T) {
 	if os.Getenv("THIS_IS_GOING_TO_COST_ME_MONEY") == "" {
 		t.Skip("THIS_IS_GOING_TO_COST_ME_MONEY not set, skipping")
 	}
-
-	timestamp := time.Now().Unix()
+	timeStamp := time.Now().Unix()
 	testConfig := fmt.Sprintf(`
 	resource "transip_vps" "test" {
 		description             = "test-%d"
     product_name     = "vps-bladevps-x1"
     operating_system = "ubuntu-20.04"
 	}
-	`, timestamp)
-
+	`, timeStamp)
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -65,6 +63,36 @@ func TestAccTransipResourceVps(t *testing.T) {
 				Config: testConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("transip_vps.test", "status", "running"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccTransipResourceVpsUpdate(t *testing.T) {
+	if os.Getenv("THIS_IS_GOING_TO_COST_ME_MONEY") == "" {
+		t.Skip("THIS_IS_GOING_TO_COST_ME_MONEY not set, skipping")
+	}
+	timestamp := time.Now().Unix()
+	// TODO: Add tags when supported.
+	testConfig := fmt.Sprintf(`
+	resource "transip_vps" "test" {
+		description             = "test-%d"
+	product_name     = "vps-bladevps-x1"
+	operating_system = "ubuntu-20.04"
+	is_customer_locked = true
+	}
+	`, timestamp)
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testConfig,
+				Check: resource.ComposeTestCheckFunc(
+					// Test if lock is set and if the description has changed.
+					resource.TestCheckResourceAttr("transip_vps.test", "is_customer_locked", "true"),
+					resource.TestCheckResourceAttr("transip_vps.test", "description", fmt.Sprintf("test-%d", timestamp)),
 				),
 			},
 		},
