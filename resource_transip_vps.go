@@ -309,16 +309,26 @@ func resourceVpsUpdate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("failed to get details for vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
 	}
 
+	updated := false
+	if vps.Description != d.Get("description").(string) {
+		updated = true
+	}
+	if vps.IsCustomerLocked != d.Get("is_customer_locked").(bool) {
+		updated = true
+	}
+
 	vps.Description = d.Get("description").(string)
 	vps.IsCustomerLocked = d.Get("is_customer_locked").(bool)
 	// Below results in a conversion error: interface conversion: interface {} is []interface {}, not []string
 	// vps.Tags = d.Get("tags").([]string)
 
-	err = repository.Update(vps)
-
-	if err != nil {
-		return fmt.Errorf("failed to update vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
+	if updated {
+		err = repository.Update(vps)
+		if err != nil {
+			return fmt.Errorf("failed to update vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
+		}
 	}
+
 	return resourceVpsRead(d, m)
 }
 
