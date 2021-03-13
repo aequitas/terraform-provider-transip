@@ -1,6 +1,7 @@
 .terraform/
 *.tfstate*
 *.tfvars
+.terraform.lock.*
 
 terraform-provider-*
 
