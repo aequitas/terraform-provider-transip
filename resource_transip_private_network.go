@@ -21,29 +21,29 @@ func resourcePrivateNetwork() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"description": {
-				Required:    true,
-				Description: "The custom name that can be set by customer.",
 				Type:        schema.TypeString,
+				Description: "The custom name that can be set by customer.",
+				Required:    true,
 			},
 			"name": {
-				Computed:    true,
-				Description: "The unique private network name",
 				Type:        schema.TypeString,
+				Description: "The unique private network name",
+				Computed:    true,
 			},
 			"is_blocked": {
-				Computed:    true,
-				Description: "If the Private Network is administratively blocked.",
 				Type:        schema.TypeString,
+				Description: "If the Private Network is administratively blocked.",
+				Computed:    true,
 			},
 			"is_locked": {
-				Computed:    true,
-				Description: "When locked, another process is already working with this private network.",
 				Type:        schema.TypeString,
+				Description: "When locked, another process is already working with this private network.",
+				Computed:    true,
 			},
 			"vps_names": {
-				Computed:    true,
-				Description: "The VPSes in this private network.",
 				Type:        schema.TypeList,
+				Description: "The VPSes in this private network.",
+				Computed:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
