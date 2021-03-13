@@ -33,13 +33,11 @@ destroy: init
 plan: init
 	terraform plan -detailed-exitcode ${_targets} examples/
 
-init: .terraform/plugins/darwin_amd64/lock.json
-
-.terraform/plugins/darwin_amd64/lock.json: terraform.d/plugins/${os}_${arch}/terraform-provider-transip_${version} | terraform
+init: ${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip/${version:v%=%}/${os}_${arch}/terraform-provider-transip_${version} | terraform
 	terraform init examples/
 
-install: terraform.d/plugins/${os}_${arch}/terraform-provider-transip_${version}
-terraform.d/plugins/${os}_${arch}/terraform-provider-transip_${version}:  build/${os}_${arch}/terraform-provider-transip_${version}
+install: ${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip/${version:v%=%}/${os}_${arch}/terraform-provider-transip_${version}
+${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip/${version:v%=%}/${os}_${arch}/terraform-provider-transip_${version}:  build/${os}_${arch}/terraform-provider-transip_${version}
 	mkdir -p ${@D}
 	cp $< $@
 
@@ -67,6 +65,7 @@ docs: | init
 clean:
 	rm -rf terraform-provider-transip* build/ docs/
 	rm -rf .terraform/ terraform.tfstate
+	rm -rf ${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip
 
 mrproper: clean
 	go clean -modcache
