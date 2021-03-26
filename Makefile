@@ -66,7 +66,6 @@ docs: | init
 clean:
 	rm -rf terraform-provider-transip* build/ docs/
 	rm -rf .terraform/ terraform.tfstate
-	rm -rf ${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip
 
 mrproper: clean
 	go clean -modcache
