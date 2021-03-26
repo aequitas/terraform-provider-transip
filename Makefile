@@ -34,7 +34,8 @@ plan: init
 	terraform plan -detailed-exitcode ${_targets} examples/
 
 init: ${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip/${version:v%=%}/${os}_${arch}/terraform-provider-transip_${version} | terraform
-	terraform init examples/
+	-rm .terraform.lock.hcl 
+	terraform init examples/ 
 
 install: ${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip/${version:v%=%}/${os}_${arch}/terraform-provider-transip_${version}
 ${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip/${version:v%=%}/${os}_${arch}/terraform-provider-transip_${version}:  build/${os}_${arch}/terraform-provider-transip_${version}
