@@ -4,6 +4,7 @@ import sys
 import json
 
 PROVIDER = "transip"
+PROVIDER_REGISTRY_NAME = f"registry.terraform.io/aequitas/{PROVIDER}"
 
 INDEX_TEMPLATE = """
 # {title} Provider
@@ -34,12 +35,11 @@ ATTRIBUTE_TEMPLATE = "* `{name}` - {description}"
 
 schema = json.loads(sys.stdin.read())
 
-provider = schema["provider_schemas"][PROVIDER]
-
-title = PROVIDER.capitalize()
+provider = schema["provider_schemas"][PROVIDER_REGISTRY_NAME]
 
 for schematype in ["resource_schemas", "data_source_schemas"]:
     for resource, schema in provider[schematype].items():
+        provider[schematype].items()
         resource_name = resource.replace(f"{PROVIDER}_", "")
         title = resource_name.replace("_", " ").title()
         description = schema.get("description", "")
@@ -75,6 +75,8 @@ for schematype in ["resource_schemas", "data_source_schemas"]:
             )
 
 with open("docs/index.md", "w") as f:
+    title = PROVIDER.capitalize()
+
     arguments = [
         ARGUMENT_TEMPLATE.format(
             name=name,
