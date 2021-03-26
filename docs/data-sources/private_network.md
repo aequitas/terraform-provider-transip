@@ -11,5 +11,5 @@
 * `description` - The custom name that can be set by customer.
 * `id` - n/a
 * `is_blocked` - If the Private Network is administratively blocked.
-* `is_locked` - When locked, another process is already working with this private network.
+* `is_locked` - When locked, another process is already working with this privatenetwork.
 * `vps_names` - The VPSes in this private network.
