@@ -7,7 +7,6 @@
 * `availability_zone` - (Optional) The name of the availability zone the VPS is in.
 * `description` - (Optional) The name that can be set by customer.
 * `install_text` - (Optional) Base64 encoded preseed / kickstart / cloudinit instructions, when installing unattended.
-* `name` - (Required) The unique VPS name.
 * `operating_system` - (Required) The VPS OperatingSystem.
 * `product_name` - (Required) The product name.
 
@@ -23,5 +22,6 @@
 * `is_customer_locked` - If this VPS is locked by the customer.
 * `mac_address` - The VPS macaddress.
 * `memory_size` - The VPS memory size in kB.
+* `name` - The unique VPS name.
 * `status` - The VPS status, either 'created', 'installing', 'running', 'stopped' or 'paused'.
 * `tags` - The custom tags added to this VPS.

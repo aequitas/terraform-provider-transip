@@ -24,22 +24,22 @@ import: init
 comma=,
 _targets = $(addprefix -target=,$(subst ${comma}, ,${targets}))
 
+terraform = terraform -chdir=examples/
+
 apply: init
-	terraform apply ${_targets} examples/
+	${terraform} apply ${_targets}
 
 destroy: init
-	terraform destroy ${_targets} examples/
+	${terraform} destroy ${_targets}
 
 plan: init
-	terraform plan -detailed-exitcode ${_targets} examples/
+	${terraform} plan -detailed-exitcode ${_targets}
 
-init: ${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip/${version:v%=%}/${os}_${arch}/terraform-provider-transip_${version} | terraform
-	-rm .terraform.lock.hcl 
-	terraform init examples/ 
+init: build/terraform-provider-transip | terraform
+	${terraform} init
 
-install: ${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip/${version:v%=%}/${os}_${arch}/terraform-provider-transip_${version}
-${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip/${version:v%=%}/${os}_${arch}/terraform-provider-transip_${version}:  build/${os}_${arch}/terraform-provider-transip_${version}
-	mkdir -p ${@D}
+dev_install: build/terraform-provider-transip
+build/terraform-provider-transip:  build/${os}_${arch}/terraform-provider-transip_${version}
 	cp $< $@
 
 terraform-provider-transip_${version}_%_${arch}.zip: build/%_${arch}/terraform-provider-transip_${version}
@@ -58,15 +58,14 @@ test:
 	TF_ACC=${TF_ACC} go test -v
 
 docs: | init
-	@echo 'provider "transip" {}' > tmp.tf
+	@echo 'provider "aequitas/transip" {}' > tmp.tf
 	mkdir -p docs/{resources,data-sources}/
-	terraform providers schema -json | ./tools/docs.py
+	${terraform} providers schema -json | ./tools/docs.py
 	@rm -f tmp.tf
 
 clean:
 	rm -rf terraform-provider-transip* build/ docs/
 	rm -rf .terraform/ terraform.tfstate
-	rm -rf ${HOME}/.terraform.d/plugins/registry.terraform.io/aequitas/transip
 
 mrproper: clean
 	go clean -modcache
