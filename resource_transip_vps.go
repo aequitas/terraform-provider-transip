@@ -91,7 +91,8 @@ func resourceVps() *schema.Resource {
 			"is_customer_locked": {
 				Type:        schema.TypeBool,
 				Description: "If this VPS is locked by the customer.",
-				Computed:    true,
+				Default:     false,
+				Optional:    true,
 			},
 			"availability_zone": {
 				Type:        schema.TypeString,
@@ -308,15 +309,15 @@ func resourceVpsUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	updated := false
-	if vps.Description != d.Get("description").(string) {
-		updated = true
-	}
 	if vps.IsCustomerLocked != d.Get("is_customer_locked").(bool) {
 		updated = true
+		vps.IsCustomerLocked = d.Get("is_customer_locked").(bool)
+	}
+	if vps.Description != d.Get("description").(string) {
+		updated = true
+		vps.Description = d.Get("description").(string)
 	}
 
-	vps.Description = d.Get("description").(string)
-	vps.IsCustomerLocked = d.Get("is_customer_locked").(bool)
 	// Below results in a conversion error: interface conversion: interface {} is []interface {}, not []string
 	// vps.Tags = d.Get("tags").([]string)
 
