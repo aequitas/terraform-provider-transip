@@ -33,7 +33,6 @@ func resourceVps() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The name that can be set by customer.",
 				Optional:    true,
-				ForceNew:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					if len(val.(string)) > 32 {
 						errs = append(errs, fmt.Errorf("%q must be less than 33 characters", key))
@@ -308,25 +307,24 @@ func resourceVpsUpdate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("failed to get details for vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
 	}
 
-	updated := false
+	// Check if IsCustomerLocked has been changed before changing other values as they may depend on it.
 	if vps.IsCustomerLocked != d.Get("is_customer_locked").(bool) {
-		updated = true
 		vps.IsCustomerLocked = d.Get("is_customer_locked").(bool)
-	}
-	if vps.Description != d.Get("description").(string) {
-		updated = true
-		vps.Description = d.Get("description").(string)
-	}
-
-	// Below results in a conversion error: interface conversion: interface {} is []interface {}, not []string
-	// vps.Tags = d.Get("tags").([]string)
-
-	if updated {
 		err = repository.Update(vps)
 		if err != nil {
 			return fmt.Errorf("failed to update vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
 		}
 	}
+	if vps.Description != d.Get("description").(string) {
+		vps.Description = d.Get("description").(string)
+		err = repository.Update(vps)
+		if err != nil {
+			return fmt.Errorf("failed to update vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
+		}
+	}
+
+	// Below results in a conversion error: interface conversion: interface {} is []interface {}, not []string
+	// vps.Tags = d.Get("tags").([]string)
 
 	return resourceVpsRead(d, m)
 }
