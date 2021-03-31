@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -17,7 +18,7 @@ func resourceVps() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceVpsCreate,
 		Read:   resourceVpsRead,
-		// Update: resourceVpsUpdate,
+		Update: resourceVpsUpdate,
 		Delete: resourceVpsDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -32,7 +33,6 @@ func resourceVps() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The name that can be set by customer.",
 				Optional:    true,
-				ForceNew:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					if len(val.(string)) > 32 {
 						errs = append(errs, fmt.Errorf("%q must be less than 33 characters", key))
@@ -90,7 +90,8 @@ func resourceVps() *schema.Resource {
 			"is_customer_locked": {
 				Type:        schema.TypeBool,
 				Description: "If this VPS is locked by the customer.",
-				Computed:    true,
+				Default:     false,
+				Optional:    true,
 			},
 			"availability_zone": {
 				Type:        schema.TypeString,
@@ -233,7 +234,8 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 		if d.Id() == "" {
 			return resource.RetryableError(fmt.Errorf("Failed to set ID for VPS %s", d.Id()))
 		}
-		return resource.NonRetryableError(resourceVpsRead(d, m))
+		// Update first instead of read, as if user sets is_customer_locked to true it won't be set until a second apply is done.
+		return resource.NonRetryableError(resourceVpsUpdate(d, m))
 	})
 }
 
@@ -294,6 +296,37 @@ func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return nil
+}
+
+func resourceVpsUpdate(d *schema.ResourceData, m interface{}) error {
+	client := m.(repository.Client)
+	repository := vps.Repository{Client: client}
+
+	vps, err := repository.GetByName(d.Id())
+	if err != nil {
+		return fmt.Errorf("failed to get details for vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
+	}
+
+	// Check if IsCustomerLocked has been changed before changing other values as they may depend on it.
+	if vps.IsCustomerLocked != d.Get("is_customer_locked").(bool) {
+		vps.IsCustomerLocked = d.Get("is_customer_locked").(bool)
+		err = repository.Update(vps)
+		if err != nil {
+			return fmt.Errorf("failed to update vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
+		}
+	}
+	if vps.Description != d.Get("description").(string) {
+		vps.Description = d.Get("description").(string)
+		err = repository.Update(vps)
+		if err != nil {
+			return fmt.Errorf("failed to update vps %s with id %q: %s", d.Get("description").(string), d.Id(), err)
+		}
+	}
+
+	// Below results in a conversion error: interface conversion: interface {} is []interface {}, not []string
+	// vps.Tags = d.Get("tags").([]string)
+
+	return resourceVpsRead(d, m)
 }
 
 func resourceVpsDelete(d *schema.ResourceData, m interface{}) error {
