@@ -101,11 +101,20 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if err != nil {
 		cacheDir = os.TempDir()
 	}
+	// create cacheDir with restricted permissions if it does not already exist
+	_, err = os.Stat(cacheDir)
+	os.IsNotExist(err)
+	if err != nil {
+		err = os.Mkdir(cacheDir, 0700)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create token cache dir")
+		}
+	}
 	cacheFile := filepath.Join(cacheDir, "gotransip_test_token_cache")
 	// create cachefile with restricted permissions
 	_, err = os.OpenFile(cacheFile, os.O_CREATE, 0600)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create token cache dir")
+		return nil, fmt.Errorf("failed to create token cache file")
 	}
 	cache, err := authenticator.NewFileTokenCache(cacheFile)
 	if err != nil {
