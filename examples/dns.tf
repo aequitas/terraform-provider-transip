@@ -14,6 +14,10 @@ data "transip_domain" "demo" {
   name = var.domain
 }
 
+# get a list of all domain names in your TransIP account.
+data "transip_domains" "all_domains" {
+}
+
 # create a www CNAME record
 resource "transip_dns_record" "www" {
   domain  = data.transip_domain.demo.id
