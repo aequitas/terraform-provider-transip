@@ -75,6 +75,7 @@ func Provider() *schema.Provider {
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"transip_domain":          dataSourceDomain(),
+			"transip_domains":         dataSourceDomains(),
 			"transip_vps":             dataSourceVps(),
 			"transip_private_network": dataSourcePrivateNetwork(),
 			"transip_sshkey":          datasourceSSHKey(),
