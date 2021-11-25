@@ -8,6 +8,7 @@ import (
 )
 
 func TestAccTransipDataSourceDomains(t *testing.T) {
+	t.Skip("TODO: can be implemented when switching to helper/v2 and using TestCheckTypeSetElemAttr")
 	if v := os.Getenv("TF_VAR_domain"); v == "" {
 		t.Skip("TF_VAR_domain must be set for acceptance tests")
 	}
