@@ -20,14 +20,17 @@ func dataSourceOpenstackProject() *schema.Resource {
 			"description": {
 				Type:        schema.TypeString,
 				Description: "Describes this project",
+				Optional:    true,
 			},
 			"locked": {
 				Type:        schema.TypeBool,
 				Description: "Set to true when an ongoing process blocks the project from being modified",
+				Optional:    true,
 			},
 			"blocked": {
 				Type:        schema.TypeBool,
 				Description: "Set to true when a project has been administratively blocked",
+				Optional:    true,
 			},
 		},
 	}

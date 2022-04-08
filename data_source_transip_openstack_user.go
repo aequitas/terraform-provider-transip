@@ -20,10 +20,12 @@ func dataSourceOpenstackUser() *schema.Resource {
 			"description": {
 				Type:        schema.TypeString,
 				Description: "Describes this user",
+				Optional:    true,
 			},
 			"email": {
 				Type:        schema.TypeString,
 				Description: "Email",
+				Required:    true,
 			},
 		},
 	}
