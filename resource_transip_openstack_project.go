@@ -12,7 +12,7 @@ func resourceOpenstackProject() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOpenstackProjectCreate,
 		Read:   resourceOpenstackProjectRead,
-		Update: resourceOpenstackprojectUpdate,
+		Update: resourceOpenstackProjectUpdate,
 		Delete: resourceOpenstackProjectDelete,
 
 		Importer: &schema.ResourceImporter{
@@ -100,7 +100,7 @@ func resourceOpenstackProjectRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceOpenstackprojectUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceOpenstackProjectUpdate(d *schema.ResourceData, m interface{}) error {
 
 	client := m.(repository.Client)
 	repository := openstack.ProjectRepository{Client: client}
