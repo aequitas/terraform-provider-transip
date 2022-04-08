@@ -20,7 +20,7 @@ func resourceOpenstackUser() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"projectId": {
+			"projectid": {
 				Type:        schema.TypeString,
 				Description: "Grant user access to a project",
 				Required:    true,
@@ -60,7 +60,7 @@ func resourceOpenstackUserCreate(d *schema.ResourceData, m interface{}) error {
 	repository := openstack.UserRepository{Client: client}
 
 	err := repository.Create(openstack.CreateUserRequest{
-		ProjectID:   d.Get("projectId").(string),
+		ProjectID:   d.Get("projectid").(string),
 		Username:    d.Get("username").(string),
 		Password:    d.Get("password").(string),
 		Description: d.Get("description").(string),
