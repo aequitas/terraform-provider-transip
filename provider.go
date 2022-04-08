@@ -71,14 +71,16 @@ func Provider() *schema.Provider {
 			"transip_private_network":            resourcePrivateNetwork(),
 			"transip_private_network_attachment": resourcePrivateNetworkAttachment(),
 			"transip_sshkey":                     resourceSSHKey(),
+			"transip_openstack_project":          resourceOpenstackProject(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"transip_domain":          dataSourceDomain(),
-			"transip_domains":         dataSourceDomains(),
-			"transip_vps":             dataSourceVps(),
-			"transip_private_network": dataSourcePrivateNetwork(),
-			"transip_sshkey":          datasourceSSHKey(),
+			"transip_domain":            dataSourceDomain(),
+			"transip_domains":           dataSourceDomains(),
+			"transip_vps":               dataSourceVps(),
+			"transip_private_network":   dataSourcePrivateNetwork(),
+			"transip_sshkey":            datasourceSSHKey(),
+			"transip_openstack_project": dataSourceOpenstackProject(),
 		},
 	}
 }

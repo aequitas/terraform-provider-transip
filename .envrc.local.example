@@ -19,3 +19,6 @@ export TF_VAR_vps_name=example-vps
 
 # name of the private network used for testing, the private network will be read from but not modified.
 export TF_VAR_private_network_name=accountname-privatenetwork
+
+# name of the openstack project used for testing
+export TF_VAR_openstack_project_name
