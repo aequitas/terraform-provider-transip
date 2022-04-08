@@ -72,6 +72,7 @@ func Provider() *schema.Provider {
 			"transip_private_network_attachment": resourcePrivateNetworkAttachment(),
 			"transip_sshkey":                     resourceSSHKey(),
 			"transip_openstack_project":          resourceOpenstackProject(),
+			"transip_openstack_user":             resourceOpenstackUser(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -81,6 +82,7 @@ func Provider() *schema.Provider {
 			"transip_private_network":   dataSourcePrivateNetwork(),
 			"transip_sshkey":            datasourceSSHKey(),
 			"transip_openstack_project": dataSourceOpenstackProject(),
+			"transip_openstack_user":    dataSourceOpenstackUser(),
 		},
 	}
 }
