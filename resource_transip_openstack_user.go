@@ -48,6 +48,7 @@ func resourceOpenstackUser() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Description",
 				Required:    false,
+				Optional:    true,
 				ForceNew:    false,
 			},
 		},
