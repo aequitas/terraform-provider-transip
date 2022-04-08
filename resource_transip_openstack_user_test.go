@@ -26,7 +26,7 @@ func TestAccTransipResourcOpenstackUser(t *testing.T) {
 
 	testConfig := fmt.Sprintf(`
 	resource "transip_openstack_user" "test" {
-		projectId = "%s"
+		projectid = "%s"
 		username = "tf-test-user"
 		email = "tf-test-user@transip.nl"
 		password = "%s"
@@ -36,7 +36,7 @@ func TestAccTransipResourcOpenstackUser(t *testing.T) {
 
 	testConfigUpdate := fmt.Sprintf(`
 	resource "transip_openstack_user" "test" {
-		projectId = "%s"
+		projectid = "%s"
 		username = "tf-test-user"
 		email = "tf-test-user-updated-email@transip.nl"
 		password = "%s"
