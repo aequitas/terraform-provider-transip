@@ -14,6 +14,7 @@ Supported resources:
  - VPS (data source, resource)
  - VPS private network (data source, resource)
  - VPS firewall (resource)
+ - OpenStack Project (data source, resource)
 
 ## Requirements
 
