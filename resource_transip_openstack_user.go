@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/transip/gotransip/v6/openstack"
 	"github.com/transip/gotransip/v6/repository"
@@ -71,19 +74,37 @@ func resourceOpenstackUserCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("failed to create openstack user %q: %s", d.Get("username").(string), err)
 	}
 
-	users, err := repository.GetAll()
-	if err != nil {
-		return fmt.Errorf("failed to list openstack users: %s", err)
-	}
-
-	// get ID of openstack project
-	for _, user := range users {
-		if user.Username == d.Get("username") {
-			d.SetId(user.ID)
-			break
+	// Return with retryable error, as the user is not found instantly.
+	return resource.Retry(d.Timeout(schema.TimeoutCreate)-15*time.Minute, func() *resource.RetryError {
+		users, err := repository.GetAll()
+		if err != nil {
+			return resource.NonRetryableError(fmt.Errorf("failed to list openstack users: %s", err))
 		}
-	}
-	return resourceOpenstackUserRead(d, m)
+		var found bool
+		// get ID of openstack project
+		for _, user := range users {
+			log.Printf("GETTING ALL THE USERS!!! %v", user)
+		}
+		for _, user := range users {
+			if user.Username == d.Get("username") {
+				log.Printf("found id %v for user %v\n", user.Username, user.ID)
+				d.SetId(user.ID)
+				found = true
+				break
+			}
+		}
+		if !found {
+			return resource.RetryableError(fmt.Errorf("UserId not available yet due to OpenStack delay, retrying"))
+		}
+
+		err = resourceOpenstackUserRead(d, m)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		} else {
+			return nil
+		}
+
+	})
 }
 
 func resourceOpenstackUserRead(d *schema.ResourceData, m interface{}) error {
@@ -96,8 +117,6 @@ func resourceOpenstackUserRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to get openstack users %q: %s", id, err)
 	}
-
-	d.SetId(i.ID)
 
 	d.Set("email", i.Email)
 	d.Set("username", i.Username)
