@@ -37,14 +37,14 @@ func resourceOpenstackProject() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Set to true when an ongoing process blocks the project from being modified",
 				Required:    false,
-				Optional:    true,
+				Computed:    true,
 				ForceNew:    false,
 			},
 			"blocked": {
 				Type:        schema.TypeBool,
 				Description: "Set to true when a project has been administratively blocked",
 				Required:    false,
-				Optional:    true,
+				Computed:    true,
 				ForceNew:    false,
 			},
 		},
@@ -112,8 +112,8 @@ func resourceOpenstackProjectUpdate(d *schema.ResourceData, m interface{}) error
 		ID:          d.Id(),
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
-		IsLocked:    d.Get("islocked").(bool),
-		IsBlocked:   d.Get("isblocked").(bool),
+		// IsLocked:    d.Get("islocked").(bool),
+		// IsBlocked:   d.Get("isblocked").(bool),
 	})
 
 	return resourceOpenstackProjectRead(d, m)
