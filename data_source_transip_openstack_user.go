@@ -25,7 +25,7 @@ func dataSourceOpenstackUser() *schema.Resource {
 			"email": {
 				Type:        schema.TypeString,
 				Description: "Email",
-				Required:    true,
+				Optional:    true,
 			},
 		},
 	}
