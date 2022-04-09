@@ -82,12 +82,10 @@ func resourceOpenstackUserCreate(d *schema.ResourceData, m interface{}) error {
 		}
 		var found bool
 		// get ID of openstack project
-		for _, user := range users {
-			log.Printf("GETTING ALL THE USERS!!! %v", user)
-		}
+		log.Printf("[DEBUG] listing all users from openstack %v", users)
 		for _, user := range users {
 			if user.Username == d.Get("username") {
-				log.Printf("found id %v for user %v\n", user.Username, user.ID)
+				log.Printf("[DEBUG] found id %v for user %v\n", user.Username, user.ID)
 				d.SetId(user.ID)
 				found = true
 				break
