@@ -12,3 +12,5 @@ gopath/
 
 # may contain sensitive information and is user specific
 .envrc.local
+
+vendor/
