@@ -13,6 +13,7 @@ builds:
   mod_timestamp: '{{ .CommitTimestamp }}'
   flags:
     - -trimpath
+    - -tags=timetzdata
   ldflags:
     - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
   goos:
@@ -38,7 +39,7 @@ checksum:
 signs:
   - artifacts: checksum
     args:
-      # if you are using this is a GitHub action or some other automated pipeline, you 
+      # if you are using this is a GitHub action or some other automated pipeline, you
       # need to pass the batch flag to indicate its not interactive.
       - "--batch"
       - "--local-user"
