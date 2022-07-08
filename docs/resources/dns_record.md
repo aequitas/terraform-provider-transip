@@ -8,7 +8,7 @@
 * `domain` - (Required) The name, including the tld of the domain.
 * `expire` - (Optional) The expiration period of the dns entry, in seconds. For example 86400 for a day of expiration.
 * `name` - (Required) The name of the dns entry, for example '@' or 'www'.
-* `type` - (Required) The type of dns entry. Possbible types are 'A', 'AAAA', 'CAA', 'CNAME', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP' and 'TLSA'.
+* `type` - (Required) The type of dns entry. Possbible types are 'A', 'AAAA', 'CAA', 'CNAME', 'DS', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP' and 'TLSA'.
 
 ## Attribute Reference
 
