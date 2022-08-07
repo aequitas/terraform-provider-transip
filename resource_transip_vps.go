@@ -231,7 +231,7 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 			d.SetId(v.Name)
 		}
 		if d.Id() == "" {
-			return resource.RetryableError(fmt.Errorf("Failed to set ID for VPS %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("failed to set ID for VPS %s", d.Id()))
 		}
 		return resource.NonRetryableError(resourceVpsRead(d, m))
 	})
