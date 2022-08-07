@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/mutexkv"
+	"github.com/aequitas/terraform-provider-transip/helpers/mutexkv"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"github.com/transip/gotransip/v6"
