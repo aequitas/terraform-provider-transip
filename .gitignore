@@ -14,3 +14,4 @@ gopath/
 .envrc.local
 
 vendor/
+.vscode
