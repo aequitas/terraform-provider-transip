@@ -66,6 +66,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"transip_dns_record":                 resourceDNSRecord(),
 			"transip_domain":                     resourceDomain(),
+			"transip_domain_nameservers":         resourceDomainNameservers(),
 			"transip_vps":                        resourceVps(),
 			"transip_vps_firewall":               resourceVpsFirewall(),
 			"transip_private_network":            resourcePrivateNetwork(),
