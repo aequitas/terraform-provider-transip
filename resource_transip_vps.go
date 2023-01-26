@@ -150,7 +150,7 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 	description := d.Get("description").(string)
 	addons := []string{}
 	installText := d.Get("install_text").(string)
-	installFlavour := d.Get("install_flavour").(vps.InstallFlavour)
+	installFlavour := vps.InstallFlavour(d.Get("install_flavour").(string))
 
 	client := m.(repository.Client)
 	repository := vps.Repository{Client: client}
