@@ -18,6 +18,7 @@ var errorStrings = []string{
 	"Error setting Dns Entries",
 	"Internal error occurred, please contact our support",
 	"DNS Entries are currently being saved",
+	"Too many requests",
 }
 
 func retryableDNSRecordErrorf(err error, format string, a ...interface{}) *resource.RetryError {
