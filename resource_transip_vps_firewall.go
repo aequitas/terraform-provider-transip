@@ -5,9 +5,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/transip/gotransip/v6/repository"
 	"github.com/transip/gotransip/v6/vps"
@@ -89,7 +89,7 @@ func vpsFirewallRuleSchema() *schema.Resource {
 				ForceNew:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.CIDRNetwork(0, 128),
+					ValidateFunc: validation.IsCIDRNetwork(0, 128),
 				},
 			},
 		},

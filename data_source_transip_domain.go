@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/transip/gotransip/v6/domain"
 	"github.com/transip/gotransip/v6/repository"
 )
@@ -105,7 +105,7 @@ func dataSourceDomainRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("nameservers", nameservers)
 	d.Set("tags", i.Tags)
 	d.Set("authcode", i.AuthCode)
-	d.Set("cancellation_date", i.CancellationDate)
+	d.Set("cancellation_date", i.CancellationDate.Format("2006-01-02 15:04:05"))
 	d.Set("cancellation_status", i.CancellationStatus)
 	d.Set("is_dns_only", i.IsDNSOnly)
 	d.Set("is_transfer_locked", i.IsTransferLocked)
