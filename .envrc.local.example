@@ -1,5 +1,5 @@
 # Set these variables and rename the file to .envrc.local
-# acceptance testing.
+# 
 # This file is in .gitignore so won't be commited to
 # Git, but it's still best to use a tool like keyring
 # to prevent credentials leaking.
