@@ -1,13 +1,13 @@
 .PHONY: release import plan init install test_acc test docs clean mrproper
 
-all: test install
+all: build test install
 
 release:
 	goreleaser release --rm-dist
 
 version = $(shell git describe --tags --abbrev=0)
 os = $(shell uname -s|tr '[:upper:]' '[:lower:]')
-arch = amd64
+arch = $(shell uname -m)
 
 builds = \
 	build/darwin_${arch}/terraform-provider-transip_${version} \
@@ -35,7 +35,7 @@ destroy: init
 plan: init
 	${terraform} plan -detailed-exitcode ${_targets}
 
-init: build/terraform-provider-transip | terraform
+init: build/terraform-provider-transip 
 	${terraform} init
 
 dev_install: build/terraform-provider-transip
@@ -70,7 +70,3 @@ clean:
 mrproper: clean
 	go clean -modcache
 	rm -rf ./gopath/
-
-hub terraform: %: /usr/local/bin/%
-/usr/local/bin/%:
-	brew install $*
