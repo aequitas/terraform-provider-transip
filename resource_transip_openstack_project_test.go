@@ -51,7 +51,7 @@ func TestAccTransipResourcOpenstackProject(t *testing.T) {
 	timestamp := time.Now().Unix()
 	testConfig := `
 	resource "transip_openstack_project" "test" {
-		name = "tf-test"
+		name = "aequitasterraformtest-tf-test"
 		description = "terraform test project"
 	}
 	`
