@@ -3,7 +3,7 @@
 all: build test install
 
 release:
-	goreleaser release --rm-dist
+	goreleaser release --clean
 
 version = $(shell git describe --tags --abbrev=0)
 os = $(shell uname -s|tr '[:upper:]' '[:lower:]')
@@ -35,7 +35,7 @@ destroy: init
 plan: init
 	${terraform} plan -detailed-exitcode ${_targets}
 
-init: build/terraform-provider-transip 
+init: build/terraform-provider-transip
 	${terraform} init
 
 dev_install: build/terraform-provider-transip
