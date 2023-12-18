@@ -18,7 +18,7 @@ func TestAccTransipResourceVpsImport(t *testing.T) {
 
 	testConfig := fmt.Sprintf(`
 	resource "transip_vps" "test" {
-    product_name     = "vps-bladevps-x1"
+    product_name     = "vps-bladevps-x2"
     operating_system = "Debian 6"
 	}
 	`)
@@ -52,7 +52,7 @@ func TestAccTransipResourceVps(t *testing.T) {
 	testConfig := fmt.Sprintf(`
 	resource "transip_vps" "test" {
 		description             = "test-%d"
-    product_name     = "vps-bladevps-x1"
+    product_name     = "vps-bladevps-x2"
     operating_system = "ubuntu-20.04"
 	}
 	`, timestamp)
