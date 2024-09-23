@@ -82,7 +82,7 @@ func resourceDNSRecord() *schema.Resource {
 				Description: "The type of dns entry. Possbible types are 'A', 'AAAA', 'CAA', 'CNAME', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP', 'TLSA' and 'ALIAS'.",
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
-					"A", "AAAA", "CAA", "CNAME", "MX", "NS", "TXT", "SRV", "SSHFP", "TLSA", "ALIAS"
+					"A", "AAAA", "CAA", "CNAME", "MX", "NS", "TXT", "SRV", "SSHFP", "TLSA", "ALIAS",
 				}, false),
 			},
 			"content": &schema.Schema{
