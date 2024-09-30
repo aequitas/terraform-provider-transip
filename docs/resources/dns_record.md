@@ -13,3 +13,20 @@
 ## Attribute Reference
 
 * `id` - n/a
+
+## Import
+
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import dns records using the ID format `domainname/type/name`. For example:
+
+```terraform
+import {
+  to = transip_dns_record.example
+  id = "example.com/A/@"
+}
+```
+
+Using `terraform import`, import dns records using the ID format `domainname/type/name`. For example:
+
+```console
+% terraform import transip_dns_record.example "example.com/A/@"
+```
