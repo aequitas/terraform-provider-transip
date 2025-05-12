@@ -3,7 +3,7 @@ variable "vps_name" {
 }
 
 variable "vps_product" {
-  default = "vps-bladevps-x1"
+  default = "vps-bladevps-x2"
 }
 
 variable "vps_os" {

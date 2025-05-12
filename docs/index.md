@@ -26,7 +26,7 @@ provider "transip" {
 # VPS Server with setup script and DNS record
 resource "transip_vps" "test" {
   name = "example"
-  product_name = "vps-bladevps-x1"
+  product_name = "vps-bladevps-x2"
   operating_system = "ubuntu-18.04"
 
   # Script to run to provision the VPS

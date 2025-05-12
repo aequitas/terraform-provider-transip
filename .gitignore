@@ -14,3 +14,10 @@ gopath/
 .envrc.local
 
 vendor/
+
+.direnv 
+
+# Devenv
+.devenv*
+devenv.local.nix
+

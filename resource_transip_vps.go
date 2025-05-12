@@ -114,6 +114,13 @@ func resourceVps() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"install_flavour": {
+				Type:        schema.TypeString,
+				Default:     "",
+				Description: "The flavour of OS installation: 'installer', 'preinstallable' or 'cloudinit'.",
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"ipv4_addresses": {
 				Type:        schema.TypeList,
 				Description: "All IPV4 addresses associated with this VPS.",
@@ -143,6 +150,7 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 	description := d.Get("description").(string)
 	addons := []string{}
 	installText := d.Get("install_text").(string)
+	installFlavour := vps.InstallFlavour(d.Get("install_flavour").(string))
 
 	client := m.(repository.Client)
 	repository := vps.Repository{Client: client}
@@ -196,6 +204,7 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 		Hostname:          name,
 		Addons:            addons,
 		Base64InstallText: base64InstallText,
+		InstallFlavour:    installFlavour,
 	}
 
 	err = repository.Order(vpsOrder)
@@ -205,6 +214,7 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.Set("install_text", installText)
+	d.Set("install_flavour", installFlavour)
 
 	// Wait for VPS to be in a "running" state
 	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {

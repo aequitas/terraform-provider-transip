@@ -18,6 +18,7 @@ var errorStrings = []string{
 	"Error setting Dns Entries",
 	"Internal error occurred, please contact our support",
 	"DNS Entries are currently being saved",
+	"Too many requests",
 }
 
 func retryableDNSRecordErrorf(err error, format string, a ...interface{}) *resource.RetryError {
@@ -78,10 +79,10 @@ func resourceDNSRecord() *schema.Resource {
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "The type of dns entry. Possbible types are 'A', 'AAAA', 'CAA', 'CNAME', 'DS', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP' and 'TLSA'.",
+				Description: "The type of dns entry. Possbible types are 'A', 'AAAA', 'CAA', 'CNAME', 'DS', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP', 'TLSA' and 'ALIAS'.",
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
-					"A", "AAAA", "CAA", "CNAME", "DS", "MX", "NS", "TXT", "SRV", "SSHFP", "TLSA",
+					"A", "AAAA", "CAA", "CNAME", "DS", "MX", "NS", "TXT", "SRV", "SSHFP", "TLSA", "ALIAS",
 				}, false),
 			},
 			"content": &schema.Schema{
