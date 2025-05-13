@@ -1,9 +1,8 @@
-# Terraform Transip provider
-
-[![Build Status](https://travis-ci.org/aequitas/terraform-provider-transip.svg?branch=master)](https://travis-ci.org/aequitas/terraform-provider-transip)
+# OpenTofu/Terraform Transip provider
 
 Provides resources for Transip resources using [Transip API](https://www.transip.eu/transip/api/)
 
+ - [OpenTofu Registry](https://search.opentofu.org/provider/aequitas/transip/latest)
  - [Terraform Registry](https://registry.terraform.io/providers/aequitas/transip/latest)
  - [Terraform Registry Documentation](https://registry.terraform.io/providers/aequitas/transip/latest/docs)
 
@@ -23,9 +22,9 @@ In order to use the provider you need a Transip account. For this account the AP
 
 ## Installation
 
-### Terraform 0.13
+### OpenTofu/Terraform
 
-Add the following snippet to a `.tf` somewhere in your codebase and run `terraform init` to automatically download and install the provider:
+Add the following snippet to a `.tf` somewhere in your codebase and run `tofu init`/`terraform init` to automatically download and install the provider:
 
 ```hcl
 terraform {

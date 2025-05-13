@@ -17,14 +17,14 @@ build: ${builds}
 
 # import test resources
 import: init
-	terraform import -config examples/ transip_domain.test $$TF_VAR_domain
-	terraform import -config examples/ transip_vps.test $$TF_VAR_vps_name
-	terraform state list | xargs -n1 terraform state show
+	tofu import -config examples/ transip_domain.test $$TF_VAR_domain
+	tofu import -config examples/ transip_vps.test $$TF_VAR_vps_name
+	tofu state list | xargs -n1 tofu state show
 
 comma=,
 _targets = $(addprefix -target=,$(subst ${comma}, ,${targets}))
 
-terraform = terraform -chdir=examples/
+terraform = tofu -chdir=examples/
 
 apply: init
 	${terraform} apply ${_targets}
