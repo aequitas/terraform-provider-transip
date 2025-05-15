@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -170,8 +171,9 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Product %s is invalid. Valid product names are: %v", productName, availableProducts)
 	}
 
-	// query with fake vps name "x"
-	availableOss, err := repository.GetOperatingSystems("x")
+	// query using FilterOperatingSystems function, which requires the productName and optional addons
+
+	availableOss, err := repository.FilterOperatingSystems(productName, addons)
 	if err != nil {
 		return fmt.Errorf("Failed to get available operating systems: %s", err)
 	}
@@ -273,6 +275,16 @@ func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
+	// Get all Active Addons
+	addons, err := repository.GetAddons(d.Id())
+	if err != nil {
+		return fmt.Errorf("failed to lookup addons for vps %q: %s", name, err)
+	}
+	activeAddons := make([]string, len(addons.Active))
+	for i, addon := range addons.Active {
+		activeAddons[i] = addon.Name
+	}
+
 	d.Set("name", name)
 	// Description returned by TransIP API == user defined name.
 	d.Set("description", v.Description)
@@ -290,15 +302,15 @@ func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("tags", v.Tags)
 	d.Set("ipv4_addresses", ipv4Addresses)
 	d.Set("ipv6_addresses", ipv6Addresses)
+	d.Set("addons", activeAddons)
 
-	// Transip API requires OS Name for creating VPS but return OS Description on a VPS query.
-	// So it needs to be translated to avoid Terraform detecting changes.
-	operatingSystems, err := repository.GetOperatingSystems("x")
+	operatingSystems, err := repository.FilterOperatingSystems(v.ProductName, []string{})
+
 	if err != nil {
 		return fmt.Errorf("Failed to get available operating systems: %s", err)
 	}
 	for _, os := range operatingSystems {
-		if os.Description == v.OperatingSystem {
+		if os.Description == v.OperatingSystem || os.Name == v.OperatingSystem {
 			d.Set("operating_system", os.Name)
 		}
 	}
