@@ -81,6 +81,7 @@ func resourceDNSRecord() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The type of dns entry. Possbible types are 'A', 'AAAA', 'CAA', 'CNAME', 'DS', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP', 'TLSA' and 'ALIAS'.",
 				Required:    true,
+				ForceNew:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"A", "AAAA", "CAA", "CNAME", "DS","MX", "NS", "TXT", "SRV", "SSHFP", "TLSA", "ALIAS",
 				}, false),
