@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -97,10 +99,44 @@ func resourceDNSRecord() *schema.Resource {
 	}
 }
 
+func validateDNSContent(entryType string, content *schema.Set) error {
+	for _, c := range content.List() {
+		val := c.(string)
+		switch entryType {
+		case "A":
+			if net.ParseIP(val) == nil || net.ParseIP(val).To4() == nil {
+				return fmt.Errorf("invalid A record content %q: must be a valid IPv4 address", val)
+			}
+		case "AAAA":
+			if net.ParseIP(val) == nil || net.ParseIP(val).To4() != nil {
+				return fmt.Errorf("invalid AAAA record content %q: must be a valid IPv6 address", val)
+			}
+		case "CNAME", "ALIAS":
+			if !strings.Contains(val, ".") || strings.HasPrefix(val, " ") {
+				return fmt.Errorf("invalid %s record content %q: must be a valid hostname", entryType, val)
+			}
+		case "MX":
+			parts := strings.SplitN(val, " ", 2)
+			if len(parts) != 2 {
+				return fmt.Errorf("invalid MX record content %q: must be in format 'priority hostname'", val)
+			}
+			if _, err := strconv.Atoi(parts[0]); err != nil {
+				return fmt.Errorf("invalid MX record content %q: priority must be a number", val)
+			}
+		}
+	}
+	return nil
+}
+
 func resourceDNSRecordCreate(d *schema.ResourceData, m interface{}) error {
 	domainName := d.Get("domain").(string)
 	entryName := d.Get("name").(string)
 	entryType := d.Get("type").(string)
+	content := d.Get("content").(*schema.Set)
+
+	if err := validateDNSContent(entryType, content); err != nil {
+		return err
+	}
 
 	client := m.(repository.Client)
 	repository := domain.Repository{Client: client}
@@ -187,6 +223,10 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
 	expire := d.Get("expire").(int)
 	entryType := d.Get("type").(string)
 	content := d.Get("content").(*schema.Set)
+
+	if err := validateDNSContent(entryType, content); err != nil {
+		return err
+	}
 
 	client := m.(repository.Client)
 	repository := domain.Repository{Client: client}
