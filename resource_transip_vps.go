@@ -107,6 +107,16 @@ func resourceVps() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"addons": {
+				Type:        schema.TypeList,
+				Description: "Addons to attach to the VPS (e.g. 'vps-addon-1-extra-ip-address').",
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"install_text": {
 				Type:        schema.TypeString,
 				Default:     "",
@@ -149,6 +159,9 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 	availabilityZone := d.Get("availability_zone").(string)
 	description := d.Get("description").(string)
 	addons := []string{}
+	for _, addon := range d.Get("addons").([]interface{}) {
+		addons = append(addons, addon.(string))
+	}
 	installText := d.Get("install_text").(string)
 	installFlavour := vps.InstallFlavour(d.Get("install_flavour").(string))
 
@@ -271,6 +284,16 @@ func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("tags", v.Tags)
 	d.Set("ipv4_addresses", ipv4Addresses)
 	d.Set("ipv6_addresses", ipv6Addresses)
+
+	addons, err := repository.GetAddons(d.Id())
+	if err != nil {
+		return fmt.Errorf("failed to lookup vps addons %q: %s", name, err)
+	}
+	var addonNames []string
+	for _, addon := range addons.Active {
+		addonNames = append(addonNames, addon.Name)
+	}
+	d.Set("addons", addonNames)
 
 	// Transip API requires OS Name for creating VPS but return OS Description on a VPS query.
 	// So it needs to be translated to avoid Terraform detecting changes.

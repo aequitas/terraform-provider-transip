@@ -6,12 +6,14 @@
 
 * `availability_zone` - (Optional) The name of the availability zone the VPS is in.
 * `description` - (Optional) The name that can be set by customer.
+* `addons` - (Optional) List of addon names to attach to the VPS (e.g. `vps-addon-1-extra-ip-address`).
 * `install_text` - (Optional) Base64 encoded preseed / kickstart / cloudinit instructions, when installing unattended.
 * `operating_system` - (Required) The VPS OperatingSystem.
 * `product_name` - (Required) The product name.
 
 ## Attribute Reference
 
+* `addons` - The addons attached to this VPS.
 * `cpus` - The VPS cpu count.
 * `disk_size` - The VPS disk size in kB.
 * `id` - n/a
