@@ -6,6 +6,7 @@
 
 * `availability_zone` - (Optional) The name of the availability zone the VPS is in.
 * `description` - (Optional) The name that can be set by customer.
+* `tags` - (Optional) The custom tags added to this VPS.
 * `install_text` - (Optional) Base64 encoded preseed / kickstart / cloudinit instructions, when installing unattended.
 * `operating_system` - (Required) The VPS OperatingSystem.
 * `product_name` - (Required) The product name.

@@ -17,7 +17,7 @@ func resourceVps() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceVpsCreate,
 		Read:   resourceVpsRead,
-		// Update: resourceVpsUpdate,
+		Update: resourceVpsUpdate,
 		Delete: resourceVpsDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -99,14 +99,15 @@ func resourceVps() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
-			"tags": {
-				Type:        schema.TypeList,
-				Description: "The custom tags added to this VPS.",
-				Computed:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
+		"tags": {
+			Type:        schema.TypeList,
+			Description: "The custom tags added to this VPS.",
+			Optional:    true,
+			Computed:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
+		},
 			"install_text": {
 				Type:        schema.TypeString,
 				Default:     "",
@@ -285,6 +286,31 @@ func resourceVpsRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return nil
+}
+
+func resourceVpsUpdate(d *schema.ResourceData, m interface{}) error {
+	client := m.(repository.Client)
+	repository := vps.Repository{Client: client}
+
+	v, err := repository.GetByName(d.Id())
+	if err != nil {
+		return fmt.Errorf("failed to lookup vps %q: %s", d.Id(), err)
+	}
+
+	v.Description = d.Get("description").(string)
+
+	tags := []string{}
+	for _, tag := range d.Get("tags").([]interface{}) {
+		tags = append(tags, tag.(string))
+	}
+	v.Tags = tags
+
+	err = repository.Update(v)
+	if err != nil {
+		return fmt.Errorf("failed to update VPS %q: %s", d.Id(), err)
+	}
+
+	return resourceVpsRead(d, m)
 }
 
 func resourceVpsDelete(d *schema.ResourceData, m interface{}) error {
