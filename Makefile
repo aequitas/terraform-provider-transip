@@ -49,7 +49,7 @@ terraform-provider-transip_${version}_%_${arch}.tgz: build/%_${arch}/terraform-p
 	tar -zcf $@ -C ${<D} ${<F}
 
 build/%_${arch}/terraform-provider-transip_${version}: $(wildcard *.go) go.mod
-	mkdir -p ${@D}; GOOS=$* go build -o $@
+	mkdir -p ${@D}; GOOS=$* go build -tags=timetzdata -o $@
 
 test_acc: test
 test_acc: TF_ACC=1
