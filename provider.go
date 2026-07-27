@@ -69,6 +69,7 @@ func Provider() *schema.Provider {
 			"transip_domain_nameservers":         resourceDomainNameservers(),
 			"transip_domain_dnssec":              resourceDomainDNSSec(),
 			"transip_vps":                        resourceVps(),
+			"transip_vps_reverse_dns":             resourceVpsReverseDNS(),
 			"transip_vps_firewall":               resourceVpsFirewall(),
 			"transip_private_network":            resourcePrivateNetwork(),
 			"transip_private_network_attachment": resourcePrivateNetworkAttachment(),
