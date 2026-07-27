@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/product"
 	"github.com/transip/gotransip/v6/repository"
@@ -114,13 +115,16 @@ func resourceVps() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
-			"install_flavour": {
-				Type:        schema.TypeString,
-				Default:     "",
-				Description: "The flavour of OS installation: 'installer', 'preinstallable' or 'cloudinit'.",
-				Optional:    true,
-				ForceNew:    true,
-			},
+		"install_flavour": {
+			Type:        schema.TypeString,
+			Default:     "",
+			Description: "The flavour of OS installation: 'installer', 'preinstallable' or 'cloudinit'.",
+			Optional:    true,
+			ForceNew:    true,
+			ValidateFunc: validation.StringInSlice([]string{
+				"", "installer", "preinstallable", "cloudinit",
+			}, false),
+		},
 			"ipv4_addresses": {
 				Type:        schema.TypeList,
 				Description: "All IPV4 addresses associated with this VPS.",

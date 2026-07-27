@@ -6,7 +6,8 @@
 
 * `availability_zone` - (Optional) The name of the availability zone the VPS is in.
 * `description` - (Optional) The name that can be set by customer.
-* `install_text` - (Optional) Base64 encoded preseed / kickstart / cloudinit instructions, when installing unattended.
+* `install_text` - (Optional) Base64 encoded preseed / kickstart / cloudinit instructions, when installing unattended. Provide plain text, not base64 encoded — the provider encodes it automatically.
+* `install_flavour` - (Optional) The flavour of OS installation. Must be one of: `installer`, `preinstallable` or `cloudinit`. Defaults to `installer` when not specified. Use `cloudinit` when using cloud-init in `install_text`.
 * `operating_system` - (Required) The VPS OperatingSystem.
 * `product_name` - (Required) The product name.
 
