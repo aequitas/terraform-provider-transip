@@ -7,6 +7,7 @@
 * `availability_zone` - (Optional) The name of the availability zone the VPS is in.
 * `description` - (Optional) The name that can be set by customer.
 * `install_text` - (Optional) Base64 encoded preseed / kickstart / cloudinit instructions, when installing unattended.
+* `ssh_keys` - (Optional) List of public SSH keys to configure for the initial user during installation (cloud-init flavour only).
 * `operating_system` - (Required) The VPS OperatingSystem.
 * `product_name` - (Required) The product name.
 

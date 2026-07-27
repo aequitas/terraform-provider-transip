@@ -121,6 +121,15 @@ func resourceVps() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"ssh_keys": {
+				Type:        schema.TypeList,
+				Description: "Array of public SSH keys to use for account creating during installation (currently only supported with the cloudinit flavour).",
+				Optional:    true,
+				ForceNew:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"ipv4_addresses": {
 				Type:        schema.TypeList,
 				Description: "All IPV4 addresses associated with this VPS.",
@@ -177,6 +186,11 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 	// Must be no more than 32 characters, hence MD5 hash.
 	tempDescription := fmt.Sprintf("%x", md5.Sum([]byte(uuid.New().String())))
 
+	sshKeys := []string{}
+	for _, key := range d.Get("ssh_keys").([]interface{}) {
+		sshKeys = append(sshKeys, key.(string))
+	}
+
 	vpsOrder := vps.Order{
 		ProductName:       productName,
 		OperatingSystem:   operatingSystem,
@@ -186,6 +200,7 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 		Addons:            addons,
 		Base64InstallText: base64InstallText,
 		InstallFlavour:    installFlavour,
+		SSHKeys:           sshKeys,
 	}
 
 	err = repository.Order(vpsOrder)
