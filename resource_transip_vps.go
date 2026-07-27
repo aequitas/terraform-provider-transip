@@ -4,9 +4,12 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"fmt"
+	"log"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/product"
 	"github.com/transip/gotransip/v6/repository"
@@ -168,6 +171,11 @@ func resourceVpsCreate(d *schema.ResourceData, m interface{}) error {
 	}
 	if !validProduct {
 		return fmt.Errorf("Product %s is invalid. Valid product names are: %v", productName, availableProducts)
+	}
+
+	_, err = base64.StdEncoding.DecodeString(installText)
+	if err == nil && len(installText) > 0 {
+		log.Printf("[WARN] install_text appears to be base64-encoded; double-encoding will occur. Provide plain text instead.")
 	}
 
 	base64InstallText := base64.StdEncoding.EncodeToString([]byte(installText))
