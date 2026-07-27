@@ -128,6 +128,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		panic(err.Error())
 	}
 
+	cache = newThreadSafeTokenCache(cache)
+
 	var client_configuration gotransip.ClientConfiguration
 
 	if private_key_body != "" {
